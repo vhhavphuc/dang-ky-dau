@@ -1,605 +1,852 @@
 <!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Ký Lấy Dầu - Online</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<html>
 
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title>Fuel Management Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+    <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            padding: 20px;
+            font-family: Segoe UI;
+            background: linear-gradient(120deg, #1e3c72, #2a5298);
+            margin: 0;
+            padding: 30px;
+            color: #333;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 1400px;
+            margin: auto;
         }
 
-        .header {
-            text-align: center;
+        h2 {
             color: white;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .connection-status {
-            display: inline-block;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            backdrop-filter: blur(10px);
-        }
-
-        .online {
-            background: rgba(40, 167, 69, 0.9);
-        }
-
-        .offline {
-            background: rgba(220, 53, 69, 0.9);
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        @media (max-width: 768px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
+            margin-bottom: 20px;
         }
 
         .card {
             background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            overflow-x: auto;
         }
 
-        .card-title {
-            font-size: 1.5rem;
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat h3 {
+            margin: 0;
+            font-size: 26px;
             color: #2a5298;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
-        .form-group {
-            margin-bottom: 20px;
+        .stat p {
+            margin: 5px;
+            font-size: 13px;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
-            color: #555;
+            margin-bottom: 4px;
             font-weight: 600;
         }
 
-        input, select {
+        input,
+        select {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
+            max-width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
         }
 
-        input:focus, select:focus {
-            outline: none;
-            border-color: #2a5298;
-            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        button {
+            background: #2a5298;
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 600;
+            padding: 10px 14px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            margin-right: 5px;
         }
 
-        .btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            margin-top: 10px;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
-            vertical-align: middle;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .filter-section {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .filter-section input, .filter-section select {
-            flex: 1;
-            min-width: 120px;
+        button:hover {
+            background: #1e3c72;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.95rem;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
+            table-layout: fixed;
         }
 
         th {
-            background: #f8f9fa;
-            color: #2a5298;
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-        }
-
-        tr:hover {
-            background: #f8f9fa;
-        }
-
-        .badge {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .badge-today {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .badge-past {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .sync-info {
-            background: #e7f3ff;
-            border-left: 4px solid #2196F3;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 0 8px 8px 0;
-            font-size: 0.9rem;
-        }
-
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            border-radius: 10px;
+            background: #2a5298;
             color: white;
-            font-weight: 600;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            display: none;
-            animation: slideIn 0.3s ease;
-            z-index: 1000;
         }
 
-        .toast.success {
-            background: #28a745;
-        }
-
-        .toast.error {
-            background: #dc3545;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .empty-state {
+        th,
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
             text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-
-        .sheets-link {
-            display: inline-block;
-            margin-top: 15px;
-            color: #2a5298;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .sheets-link:hover {
-            text-decoration: underline;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     </style>
+
 </head>
+
 <body>
+
     <div class="container">
-        <div class="header">
-            <h1>⛽ Đăng Ký Lấy Dầu - Online</h1>
-            <p>Dữ liệu được lưu trữ trên Google Sheets</p>
-            <div id="connectionStatus" class="connection-status offline">
-                🔴 Đang kết nối...
+
+        <h2>⛽ BẢNG TỔNG HỢP THEO DÕI LÃNH DẦU DIEZEN QLK</h2>
+
+        <div class="dashboard">
+
+            <div class="stat">
+                <h3 id="totalFuel">0</h3>
+                <p>Tổng lít dầu</p>
             </div>
+
+            <div class="stat">
+                <h3 id="totalTrips">0</h3>
+                <p>Số lần lấy dầu</p>
+            </div>
+
+            <div class="stat">
+                <h3 id="topCar">-</h3>
+                <p>Xe tiêu thụ nhiều nhất</p>
+            </div>
+
+            <div class="stat">
+                <h3 id="avgFuel">0</h3>
+                <p>Trung bình lít/lần</p>
+            </div>
+
         </div>
 
-        <div class="sync-info">
-            <strong>💡 Hướng dẫn:</strong> Mọi đăng ký sẽ được lưu vào Google Sheets. 
-            Bạn có thể xem và chỉnh sửa trực tiếp trên Google Sheets.
-            <a href="#" id="sheetsLink" class="sheets-link" target="_blank">📊 Mở Google Sheets</a>
+        <div class="card">
+
+            <h3>Đăng ký lấy dầu</h3>
+
+            <form id="fuelForm">
+
+                <input id="plateNumber" list="plateNumbers" placeholder="Biển số xe" required>
+                <datalist id="plateNumbers">
+                    <option value="88LD-00031">
+                    <option value="88LD-0093">
+                    <option value="88LD-01303">
+                    <option value="88LD-0354">
+                    <option value="XN02">
+                    <option value="XN03">
+                    <option value="XN04">
+                    <option value="XN05">
+                    <option value="XN06">
+                    <option value="88B-10262">
+                    <option value="88A-84182">
+                    <option value="88A-83790">
+                    <option value="88A-75215">
+                    <option value="88B-10174">
+                    <option value="88A-84130">
+                    <option value="88B-10048">
+                    <option value="88B-10047">
+                    <option value="88A-84590">
+                </datalist>
+
+                <input id="driverName" placeholder="Tên lái xe" required>
+                <input id="fuelAmount" type="number" placeholder="Số lít" required>
+                <input id="fuelDate" type="date" required>
+
+                <label id="prevKmLabel">Số Km cuối ngày <span id="prevKmDate"></span></label>
+                <input id="prevKm" type="number" placeholder="Nhập Km cuối ngày" required>
+
+                <button>Đăng ký</button>
+
+            </form>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Bộ lọc dữ liệu</h3>
+
+            <label>Ngày bắt đầu</label>
+            <input type="date" id="startDate">
+
+            <label>Ngày kết thúc</label>
+            <input type="date" id="endDate">
+
+            <input id="filterCar" list="filterPlateNumbers" placeholder="Tất cả xe">
+            <datalist id="filterPlateNumbers">
+                <option value="">
+                <option value="88LD-00031">
+                <option value="88LD-0093">
+                <option value="88LD-01303">
+                <option value="88LD-0354">
+                <option value="XN02">
+                <option value="XN03">
+                <option value="XN04">
+                <option value="XN05">
+                <option value="XN06">
+                <option value="88B-10262">
+                <option value="88A-84182">
+                <option value="88A-83790">
+                <option value="88A-75215">
+                <option value="88B-10174">
+                <option value="88A-84130">
+                <option value="88B-10048">
+                <option value="88B-10047">
+                <option value="88A-84590">
+            </datalist>
+
+            <button onclick="applyFilter()">Lọc</button>
+            <button onclick="filterToday()">Hôm nay</button>
+            <button onclick="clearFilter()">Bỏ lọc</button>
+            <button onclick="exportExcel()">Xuất Excel</button>
+            <button onclick="exportPivot()">Xuất Pivot</button>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Lịch sử</h3>
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Ngày</th>
+                        <th>Xe</th>
+                        <th>Lái xe</th>
+                        <th>Lít</th>
+                        <th>Km cuối ngày</th>
+                        <th>Thời gian tạo</th>
+                    </tr>
+                </thead>
+
+                <tbody id="recordsTable"></tbody>
+
+            </table>
+
         </div>
 
         <div class="grid">
-            <!-- Form Section -->
+
             <div class="card">
-                <h2 class="card-title">
-                    <span>📝</span>
-                    Đăng Ký Mới
-                </h2>
-                <form id="fuelForm">
-                    <div class="form-group">
-                        <label for="plateNumber">Biển Số Xe *</label>
-                        <select id="plateNumber" required>
-                            <option value="">-- Chọn biển số --</option>
-                            <option value="51A-12345">51A-12345</option>
-                            <option value="51A-12346">51A-12346</option>
-                            <option value="51A-12347">51A-12347</option>
-                            <option value="51A-12348">51A-12348</option>
-                            <option value="51A-12349">51A-12349</option>
-                            <option value="51B-54321">51B-54321</option>
-                            <option value="51B-54322">51B-54322</option>
-                            <option value="51B-54323">51B-54323</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="driverName">Tên Lái Xe *</label>
-                        <input type="text" id="driverName" placeholder="Nhập tên lái xe" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="fuelAmount">Số Lít Dầu *</label>
-                        <input type="number" id="fuelAmount" placeholder="Nhập số lít" min="1" max="500" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="fuelDate">Ngày Đăng Ký *</label>
-                        <input type="date" id="fuelDate" required>
-                    </div>
-
-                    <button type="submit" class="btn" id="submitBtn">
-                        ✅ Xác Nhận Đăng Ký
-                    </button>
-                </form>
-
-                <button class="btn btn-secondary" onclick="loadData()">
-                    🔄 Tải Lại Dữ Liệu
-                </button>
+                <h3>Biểu đồ theo ngày</h3>
+                <canvas id="chartDay"></canvas>
             </div>
 
-            <!-- Stats & List Section -->
             <div class="card">
-                <h2 class="card-title">
-                    <span>📊</span>
-                    Thống Kê & Lịch Sử
-                </h2>
-
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalRecords">-</div>
-                        <div class="stat-label">Tổng Đăng Ký</div>
-                    </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                        <div class="stat-value" id="totalLiters">-</div>
-                        <div class="stat-label">Tổng Lít</div>
-                    </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                        <div class="stat-value" id="todayRecords">-</div>
-                        <div class="stat-label">Hôm Nay</div>
-                    </div>
-                </div>
-
-                <div class="filter-section">
-                    <input type="text" id="searchPlate" placeholder="🔍 Tìm biển số..." onkeyup="filterTable()">
-                    <input type="date" id="filterDate" onchange="filterTable()">
-                    <button class="btn btn-secondary" onclick="resetFilter()" style="flex: 0.5; padding: 10px;">
-                        Xóa Lọc
-                    </button>
-                </div>
-
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Ngày</th>
-                                <th>Biển Số</th>
-                                <th>Lái Xe</th>
-                                <th>Số Lít</th>
-                                <th>Trạng Thái</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recordsTable">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 30px;">
-                                    <div class="loading"></div> Đang tải dữ liệu...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div id="emptyState" class="empty-state" style="display: none;">
-                    <p>Không có dữ liệu</p>
-                </div>
+                <h3>Top xe tiêu thụ</h3>
+                <canvas id="chartCar"></canvas>
             </div>
+
         </div>
+
+        <div class="card">
+
+            <h3>Xu hướng theo tháng</h3>
+            <canvas id="chartMonth"></canvas>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Pivot theo tháng</h3>
+
+            <table>
+                <thead id="pivotHead"></thead>
+                <tbody id="pivotBody"></tbody>
+            </table>
+
+        </div>
+
     </div>
 
-    <div id="toast" class="toast"></div>
-
     <script>
-        // ⚠️ THAY THẾ URL NÀY BẰNG URL GOOGLE APPS SCRIPT CỦA BẠN
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwlQ0m0VAAI3uSgCaHoUzWshU8YiVAv2fegoJxj29MohFlNJU1ceAXfr_DhNu3jeyDt/exec';
-        
-        // URL Google Sheets của bạn (lấy từ thanh địa chỉ khi mở Sheet)
-        const SHEETS_URL = 'https://script.google.com/macros/library/d/1IczRCAEcXCIevBYKrGOeiP9VYAFaN1fMPuzNas4jJqNAOjvmKqP1ngO9/1';
-        
+
+        const API = "https://script.google.com/macros/s/AKfycbylS5ROqpNVYP5ThIm05g0AjRitOT91gTvWU1wL8ia03cCtOKboll_VvC8xqklr0J0j/exec";
+
+        function formatDateLocal(date) {
+
+            let y = date.getFullYear();
+            let m = String(date.getMonth() + 1).padStart(2, '0');
+            let d = String(date.getDate()).padStart(2, '0');
+
+            return y + "-" + m + "-" + d;
+
+        }
+
+        // Explicit DOM references (avoid relying on global element variables)
+        const fuelForm = document.getElementById("fuelForm");
+        const plateNumber = document.getElementById("plateNumber");
+        const driverName = document.getElementById("driverName");
+        const fuelAmount = document.getElementById("fuelAmount");
+        const fuelDate = document.getElementById("fuelDate");
+        const prevKm = document.getElementById("prevKm");
+        const prevKmDate = document.getElementById("prevKmDate");
+        const prevKmLabel = document.getElementById("prevKmLabel");
+        const startDate = document.getElementById("startDate");
+        const endDate = document.getElementById("endDate");
+        const filterCar = document.getElementById("filterCar");
+
         let allRecords = [];
-        let isOnline = false;
+        let filteredRecords = [];
+        let chartDay;
+        let chartCar;
+        let chartMonth;
+        fuelDate.valueAsDate = new Date();
 
-        // Khởi tạo
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('fuelDate').valueAsDate = new Date();
-            document.getElementById('sheetsLink').href = SHEETS_URL;
-            
-            if (SCRIPT_URL === 'YOUR_SCRIPT_URL') {
-                showToast('⚠️ Vui lòng cấu hình SCRIPT_URL trong code!', true);
-                document.getElementById('connectionStatus').textContent = '⚠️ Chưa cấu hình API';
-                document.getElementById('submitBtn').disabled = true;
-                document.getElementById('recordsTable').innerHTML = '<tr><td colspan="5" style="text-align: center; color: orange; padding: 30px;">⚠️ Vui lòng cấu hình SCRIPT_URL trong code HTML</td></tr>';
+        function updatePrevKmDate() {
+            const dateValue = fuelDate.value || formatDateLocal(new Date());
+            const d = new Date(dateValue);
+            d.setDate(d.getDate() - 1);
+            const prevDate = formatDateLocal(d);
+
+            prevKmDate.innerText = prevDate;
+            prevKm.placeholder = "Km cuối ngày " + prevDate;
+
+            updatePrevKmRequirement();
+        }
+
+        function updatePrevKmRequirement() {
+            const isXn = plateNumber.value.startsWith("XN");
+
+            if (isXn) {
+                prevKm.required = false;
+                prevKmLabel.innerHTML = `Số Km cuối ngày <span id="prevKmDate"></span> (không bắt buộc)`;
             } else {
-                checkConnection();
-                loadData();
+                prevKm.required = true;
+                prevKmLabel.innerHTML = `Số Km cuối ngày <span id="prevKmDate"></span>`;
             }
-        });
 
-        async function checkConnection() {
-            try {
-                const response = await fetch(SCRIPT_URL + '?check=true');
-                if (response.ok) {
-                    isOnline = true;
-                    document.getElementById('connectionStatus').className = 'connection-status online';
-                    document.getElementById('connectionStatus').textContent = '🟢 Đã kết nối Google Sheets';
-                }
-            } catch (error) {
-                isOnline = false;
-                document.getElementById('connectionStatus').className = 'connection-status offline';
-                document.getElementById('connectionStatus').textContent = '🔴 Mất kết nối';
-            }
+            // Keep the date text synced after changing innerHTML
+            prevKmDate.innerText = new Date(new Date(fuelDate.value || formatDateLocal(new Date())).setDate(new Date(fuelDate.value || formatDateLocal(new Date())).getDate() - 1)).toISOString().slice(0, 10);
         }
 
-        function loadData() {
-            const tbody = document.getElementById('recordsTable');
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px;"><div class="loading"></div> Đang tải...</td></tr>';
-            
-            // Sử dụng JSONP để tránh CORS
-            const script = document.createElement('script');
-            const callbackName = 'handleData_' + Date.now();
-            
-            window[callbackName] = function(data) {
-                allRecords = data;
-                renderTable(allRecords);
-                updateStats();
-                delete window[callbackName];
+        fuelDate.addEventListener("change", updatePrevKmDate);
+        plateNumber.addEventListener("change", updatePrevKmRequirement);
+        updatePrevKmDate();
+
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
+
+        startDate.value = firstDay;
+        endDate.value = lastDay;
+
+        function jsonp(url, callback) {
+
+            const script = document.createElement("script");
+
+            window[callback] = function (data) {
+
+                delete window[callback];
+                script.remove();
+
+                handle(callback, data);
+
             };
-            
-            script.src = SCRIPT_URL + '?callback=' + callbackName + '&_=' + Date.now();
-            script.onerror = function() {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">Lỗi kết nối. Vui lòng thử lại.</td></tr>';
-                delete window[callbackName];
-            };
-            
-            document.head.appendChild(script);
-            setTimeout(() => {
-                if (document.head.contains(script)) {
-                    document.head.removeChild(script);
-                }
-            }, 10000);
+
+            script.src = url + "&callback=" + callback;
+
+            document.body.appendChild(script);
+
         }
 
-        // Submit form
-        document.getElementById('fuelForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const btn = document.getElementById('submitBtn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<div class="loading"></div> Đang gửi...';
-            btn.disabled = true;
+        function handle(cb, data) {
 
-            const data = {
-                date: document.getElementById('fuelDate').value,
-                plateNumber: document.getElementById('plateNumber').value,
-                driverName: document.getElementById('driverName').value,
-                fuelAmount: parseInt(document.getElementById('fuelAmount').value)
-            };
+            if (cb === "load") {
 
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(data),
-                    headers: {
-                        'Content-Type': 'application/json'
+                allRecords = data.map(r => ({
+
+                    stt: r.stt,
+                    plateNumber: r.plateNumber,
+                    driverName: r.driverName,
+                    fuelAmount: Number(r.fuelAmount) || 0,
+                    date: r.date,
+                    createdAt: r.createdAt,
+                    endKm: Number(r.endKm) || 0
+
+                }));
+
+                applyFilter();
+
+            }
+
+            if (cb === "add") {
+
+                alert(data.message);
+
+                driverName.value = "";
+                fuelAmount.value = "";
+
+                load();
+
+            }
+
+        }
+
+        function load() {
+            jsonp(API + "?action=getRecords", "load");
+        }
+
+        function filterToday() {
+
+            let today = new Date().toISOString().slice(0, 10);
+
+            startDate.value = today;
+            endDate.value = today;
+
+            applyFilter();
+
+        }
+
+        function clearFilter() {
+
+            startDate.value = firstDay;
+            endDate.value = lastDay;
+            filterCar.value = "";
+
+            applyFilter();
+
+        }
+
+        function applyFilter() {
+
+            const start = startDate.value;
+            const end = endDate.value;
+            const car = filterCar.value;
+
+            filteredRecords = allRecords.filter(r => {
+
+                let d = new Date(r.date).toISOString().slice(0, 10);
+
+                let okDate = (!start || d >= start) && (!end || d <= end);
+                let okCar = (car == "" || r.plateNumber === car);
+
+                return okDate && okCar;
+
+            });
+
+            render(filteredRecords);
+            buildCharts(filteredRecords);
+            buildMonthChart(filteredRecords);
+            buildPivot(filteredRecords);
+            updateStats(filteredRecords);
+
+        }
+
+        function render(data) {
+
+            recordsTable.innerHTML = "";
+
+            data.forEach(r => {
+
+                let d = new Date(r.date).toISOString().slice(0, 10);
+
+                recordsTable.innerHTML += `
+<tr>
+<td>${r.stt}</td>
+<td>${d}</td>
+<td>${r.plateNumber}</td>
+<td>${r.driverName}</td>
+<td>${r.fuelAmount}</td>
+<td>${r.endKm}</td>
+<td>${formatDateTime(r.createdAt)}</td>
+</tr>
+`;
+
+            });
+
+        }
+
+        function updateStats(data) {
+
+            let totalFuel = 0;
+            let carTotal = {};
+
+            data.forEach(r => {
+
+                totalFuel += Number(r.fuelAmount) || 0;
+
+                if (!carTotal[r.plateNumber]) carTotal[r.plateNumber] = 0;
+
+                carTotal[r.plateNumber] += Number(r.fuelAmount) || 0;
+
+            });
+
+            let topCar = "-";
+            let max = 0;
+
+            for (let c in carTotal) {
+
+                if (carTotal[c] > max) {
+                    max = carTotal[c];
+                    topCar = c;
+                }
+
+            }
+
+            document.getElementById("totalFuel").innerText = totalFuel;
+            document.getElementById("totalTrips").innerText = data.length;
+            document.getElementById("avgFuel").innerText = (data.length ? (totalFuel / data.length).toFixed(1) : 0);
+            document.getElementById("topCar").innerText = topCar;
+
+        }
+
+        function buildCharts(data) {
+
+            let day = {};
+            let car = {};
+
+            data.forEach(r => {
+
+                let d = new Date(r.date).toISOString().slice(0, 10);
+
+                day[d] = (day[d] || 0) + Number(r.fuelAmount || 0);
+                car[r.plateNumber] = (car[r.plateNumber] || 0) + Number(r.fuelAmount || 0);
+
+            });
+
+            if (chartDay) chartDay.destroy();
+            if (chartCar) chartCar.destroy();
+
+            chartDay = new Chart(document.getElementById("chartDay"), {
+
+                type: "line",
+
+                data: {
+                    labels: Object.keys(day),
+                    datasets: [{
+                        label: "Lít",
+                        data: Object.values(day),
+                        borderColor: "#2a5298"
+                    }]
+                },
+
+                options: {
+                    plugins: {
+                        datalabels: {
+                            color: "red",
+                            font: {
+                                size: 16,
+                                weight: "bold"
+                            },
+                            anchor: "end",
+                            align: "top",
+                            formatter: (v) => v
+                        }
                     }
-                });
-                
-                const result = await response.json();
-                
-                if (result.status === 'success') {
-                    showToast('✅ ' + result.message);
-                    // Reset form
-                    document.getElementById('plateNumber').value = '';
-                    document.getElementById('driverName').value = '';
-                    document.getElementById('fuelAmount').value = '';
-                    // Reload data
-                    setTimeout(loadData, 1000);
-                } else {
-                    throw new Error(result.message);
-                }
-                
-            } catch (error) {
-                showToast('❌ Lỗi: ' + error.message, true);
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        });
+                },
 
-        function renderTable(records) {
-            const tbody = document.getElementById('recordsTable');
-            const emptyState = document.getElementById('emptyState');
-            
-            if (!records || records.length === 0) {
-                tbody.innerHTML = '';
-                emptyState.style.display = 'block';
+                plugins: [ChartDataLabels]
+
+            });
+
+            chartCar = new Chart(document.getElementById("chartCar"), {
+
+                type: "bar",
+
+                data: {
+                    labels: Object.keys(car),
+                    datasets: [{
+                        label: "Lít",
+                        data: Object.values(car),
+                        backgroundColor: "#2a5298"
+                    }]
+                },
+
+                options: {
+                    plugins: {
+                        datalabels: {
+                            color: "red",
+                            font: {
+                                weight: "bold",
+                                size: 16
+                            },
+                            anchor: "end",
+                            align: "top"
+                        }
+                    }
+                },
+
+                plugins: [ChartDataLabels]
+
+            });
+
+        }
+
+        function buildMonthChart(data) {
+
+            let month = {};
+
+            data.forEach(r => {
+
+                let d = new Date(r.date);
+                let m = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0');
+
+                month[m] = (month[m] || 0) + Number(r.fuelAmount || 0);
+
+            });
+
+            if (chartMonth) chartMonth.destroy();
+
+            chartMonth = new Chart(document.getElementById("chartMonth"), {
+
+                type: "line",
+
+                data: {
+                    labels: Object.keys(month),
+                    datasets: [{
+                        label: "Lít dầu",
+                        data: Object.values(month),
+                        borderColor: "#ff6600",
+                        backgroundColor: "rgba(255,102,0,0.2)",
+                        fill: true
+                    }]
+                },
+
+                options: {
+                    plugins: {
+                        datalabels: {
+                            color: "red",
+                            font: {
+                                size: 16,
+                                weight: "bold"
+                            },
+                            anchor: "end",
+                            align: "top",
+                            formatter: (v) => v
+                        }
+                    }
+                },
+
+                plugins: [ChartDataLabels]
+
+            });
+
+        }
+
+        function formatDateTime(date) {
+
+            let d = new Date(date);
+
+            let y = d.getFullYear();
+            let m = String(d.getMonth() + 1).padStart(2, '0');
+            let day = String(d.getDate()).padStart(2, '0');
+
+            let h = String(d.getHours()).padStart(2, '0');
+            let min = String(d.getMinutes()).padStart(2, '0');
+
+            return y + "-" + m + "-" + day + " " + h + ":" + min;
+
+        }
+
+        function buildPivot(data) {
+
+            let months = new Set();
+            let cars = new Set();
+            let map = {};
+
+            data.forEach(r => {
+
+                let d = new Date(r.date);
+                let m = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0');
+
+                months.add(m);
+                cars.add(r.plateNumber);
+
+                if (!map[r.plateNumber]) map[r.plateNumber] = {};
+
+                map[r.plateNumber][m] = (map[r.plateNumber][m] || 0) + Number(r.fuelAmount);
+
+            });
+
+            months = [...months].sort();
+            cars = [...cars].sort();
+
+            pivotHead.innerHTML = "<tr><th>Xe</th>" + months.map(m => "<th>" + m + "</th>").join("") + "<th>Tổng</th></tr>";
+
+            let html = "";
+
+            cars.forEach(car => {
+
+                let total = 0;
+
+                let row = "<tr><td>" + car + "</td>";
+
+                months.forEach(m => {
+
+                    let v = (map[car] && map[car][m]) ? map[car][m] : 0;
+
+                    row += "<td>" + v + "</td>";
+
+                    total += v;
+
+                });
+
+                row += "<td>" + total + "</td></tr>";
+
+                html += row;
+
+            });
+
+            pivotBody.innerHTML = html;
+
+        }
+
+        function exportExcel() {
+
+            let csv = "Date,Car,Driver,Liters,Km\n";
+
+            filteredRecords.forEach(r => {
+
+                let d = new Date(r.date).toISOString().slice(0, 10);
+
+                csv += d + "," + r.plateNumber + "," + r.driverName + "," + r.fuelAmount + "," + r.endKm + "\n";
+
+            });
+
+            const blob = new Blob([csv]);
+            const a = document.createElement("a");
+
+            a.href = URL.createObjectURL(blob);
+            a.download = "fuel_report.csv";
+            a.click();
+
+        }
+
+        function exportPivot() {
+
+            let months = new Set();
+            let cars = new Set();
+
+            filteredRecords.forEach(r => {
+
+                let d = new Date(r.date);
+                let month = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0');
+
+                months.add(month);
+                cars.add(r.plateNumber);
+
+            });
+
+            months = [...months].sort();
+            cars = [...cars].sort();
+
+            let map = {};
+
+            filteredRecords.forEach(r => {
+
+                let d = new Date(r.date);
+                let month = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0');
+
+                if (!map[r.plateNumber]) map[r.plateNumber] = {};
+
+                map[r.plateNumber][month] = (map[r.plateNumber][month] || 0) + Number(r.fuelAmount);
+
+            });
+
+            let csv = "Xe," + months.join(",") + ",Tong\n";
+
+            cars.forEach(car => {
+
+                let row = [car];
+                let total = 0;
+
+                months.forEach(m => {
+
+                    let v = (map[car] && map[car][m]) ? map[car][m] : 0;
+
+                    row.push(v);
+                    total += v;
+
+                });
+
+                row.push(total);
+
+                csv += row.join(",") + "\n";
+
+            });
+
+            const blob = new Blob([csv]);
+            const a = document.createElement("a");
+
+            a.href = URL.createObjectURL(blob);
+            a.download = "fuel_pivot_report.csv";
+            a.click();
+
+        }
+
+        fuelForm.addEventListener("submit", function (e) {
+
+            e.preventDefault();
+
+            const isXn = plateNumber.value.startsWith("XN");
+
+            if (!isXn && !prevKm.value) {
+                alert("Vui lòng nhập Số Km cuối ngày " + prevKmDate.innerText + " trước khi đăng ký.");
+                prevKm.focus();
                 return;
             }
-            
-            emptyState.style.display = 'none';
-            const today = new Date().toISOString().split('T')[0];
-            
-            tbody.innerHTML = records.map(record => {
-                const isToday = record.date === today;
-                return `
-                    <tr>
-                        <td>${formatDate(record.date)}</td>
-                        <td><strong>${record.plateNumber}</strong></td>
-                        <td>${record.driverName}</td>
-                        <td>${record.fuelAmount} Lít</td>
-                        <td><span class="badge ${isToday ? 'badge-today' : 'badge-past'}">${isToday ? 'Hôm nay' : 'Đã qua'}</span></td>
-                    </tr>
-                `;
-            }).join('');
-        }
 
-        function formatDate(dateString) {
-            if (!dateString) return '-';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('vi-VN');
-        }
+            if (Number(fuelAmount.value) <= 0) {
+                alert("Số lít phải lớn hơn 0.");
+                fuelAmount.focus();
+                return;
+            }
 
-        function updateStats() {
-            const today = new Date().toISOString().split('T')[0];
-            const todayRecords = allRecords.filter(r => r.date === today);
-            
-            document.getElementById('totalRecords').textContent = allRecords.length;
-            document.getElementById('totalLiters').textContent = allRecords.reduce((sum, r) => sum + (parseInt(r.fuelAmount) || 0), 0);
-            document.getElementById('todayRecords').textContent = todayRecords.length;
-        }
+            const data = {
+                plateNumber: plateNumber.value,
+                driverName: driverName.value,
+                fuelAmount: fuelAmount.value,
+                date: fuelDate.value,
+                prevKm: prevKm.value
+            };
 
-        function filterTable() {
-            const searchPlate = document.getElementById('searchPlate').value.toLowerCase();
-            const filterDate = document.getElementById('filterDate').value;
-            
-            const filtered = allRecords.filter(r => {
-                const matchPlate = !searchPlate || (r.plateNumber && r.plateNumber.toLowerCase().includes(searchPlate));
-                const matchDate = !filterDate || r.date === filterDate;
-                return matchPlate && matchDate;
-            });
-            
-            renderTable(filtered);
-        }
+            jsonp(API + "?action=add&data=" + encodeURIComponent(JSON.stringify(data)), "add");
 
-        function resetFilter() {
-            document.getElementById('searchPlate').value = '';
-            document.getElementById('filterDate').value = '';
-            renderTable(allRecords);
-        }
+        });
 
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = 'toast ' + (isError ? 'error' : 'success');
-            toast.style.display = 'block';
-            
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, 3000);
-        }
+        load();
 
-        // Auto refresh mỗi 30 giây
-        setInterval(() => {
-            if (isOnline && SCRIPT_URL !== 'YOUR_SCRIPT_URL') loadData();
-        }, 30000);
     </script>
+
 </body>
+
 </html>
