@@ -109,6 +109,18 @@
             table-layout: fixed;
         }
 
+        tbody {
+            display: block;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        thead, tbody tr {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+
         th {
             background: #2a5298;
             color: white;
@@ -454,13 +466,17 @@
 
             filteredRecords = allRecords.filter(r => {
 
-                let d = new Date(r.date).toISOString().slice(0, 10);
+                let d = r.date;
 
                 let okDate = (!start || d >= start) && (!end || d <= end);
                 let okCar = (car == "" || r.plateNumber === car);
 
                 return okDate && okCar;
 
+            }).sort((a, b) => {
+                if (a.date > b.date) return 1;
+                if (a.date < b.date) return -1;
+                return a.stt - b.stt;
             });
 
             render(filteredRecords);
@@ -850,4 +866,5 @@
 </body>
 
 </html>
+
 
