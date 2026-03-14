@@ -299,7 +299,7 @@
 
         <div class="card">
             <label>Năm</label>
-            <select id="pivotYear" onchange="buildPivot()"></select>
+            <select id="pivotYear" onchange="buildPivot(); buildMonthChart(allRecords);"></select>
 
             <h3>TỔNG HỢP SỐ LƯỢNG LÃNH THEO THÁNG</h3>
 
@@ -664,7 +664,7 @@
         function buildMonthChart(data) {
 
             let car = filterCar.value;
-            let currentYear = new Date().getFullYear();
+            let currentYear = Number(pivotYear.value); // dùng năm của pivot
 
             let monthData = {
                 "01": 0, "02": 0, "03": 0, "04": 0, "05": 0, "06": 0,
@@ -796,13 +796,13 @@
 
                 let v = monthTotal[m] || 0;
 
-                totalRow += `<td>${v}</td>`;
+                totalRow += `<td>${formatNumber(v)}</td>`;
 
                 grandTotal += v;
 
             });
 
-            totalRow += `<td>${grandTotal}</td></tr>`;
+            totalRow += `<td>${formatNumber(grandTotal)}</td></tr>`;
 
             html += totalRow;
 
@@ -818,13 +818,13 @@
 
                     let v = map[car]?.[m] || 0;
 
-                    row += `<td>${v}</td>`;
+                    row += `<td>${formatNumber(v)}</td>`;
 
                     total += v;
 
                 });
 
-                row += `<td>${total}</td></tr>`;
+                row += `<td>${formatNumber(total)}</td></tr>`;
 
                 html += row;
 
@@ -972,6 +972,10 @@
 
             pivotYear.value = new Date().getFullYear();
 
+        }
+
+        function formatNumber(n){
+            return Number(n || 0).toLocaleString("vi-VN");
         }
 
 
