@@ -485,7 +485,7 @@
 
             render(filteredRecords);
             buildCharts(filteredRecords);
-            buildMonthChart(filteredRecords);
+            buildMonthChart(allRecords);
             buildPivot(filteredRecords);
             updateStats(filteredRecords);
 
@@ -658,54 +658,66 @@
 
         function buildMonthChart(data) {
 
-            let month = {};
+let car = filterCar.value;
+let currentYear = new Date().getFullYear();
 
-            data.forEach(r => {
+let monthData = {
+"01":0,"02":0,"03":0,"04":0,"05":0,"06":0,
+"07":0,"08":0,"09":0,"10":0,"11":0,"12":0
+};
 
-                let d = new Date(r.date);
-                let m = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0');
+data.forEach(r => {
 
-                month[m] = (month[m] || 0) + Number(r.fuelAmount || 0);
+let d = new Date(r.date);
 
-            });
+let year = d.getFullYear();
+let month = String(d.getMonth()+1).padStart(2,'0');
 
-            if (chartMonth) chartMonth.destroy();
+if(year === currentYear){
 
-            chartMonth = new Chart(document.getElementById("chartMonth"), {
+if(car === "" || r.plateNumber === car){
 
-                type: "line",
+monthData[month] += Number(r.fuelAmount) || 0;
 
-                data: {
-                    labels: Object.keys(month),
-                    datasets: [{
-                        label: "Lít dầu",
-                        data: Object.values(month),
-                        borderColor: "#ff6600",
-                        backgroundColor: "rgba(255,102,0,0.2)",
-                        fill: true
-                    }]
-                },
+}
 
-                options: {
-                    plugins: {
-                        datalabels: {
-                            color: "red",
-                            font: {
-                                size: 16,
-                                weight: "bold"
-                            },
-                            anchor: "end",
-                            align: "top",
-                            formatter: (v) => v
-                        }
-                    }
-                },
+}
 
-                plugins: [ChartDataLabels]
+});
 
-            });
+if(chartMonth) chartMonth.destroy();
 
-        }
+chartMonth = new Chart(document.getElementById("chartMonth"),{
+
+type:"line",
+
+data:{
+labels:Object.keys(monthData),
+datasets:[{
+label:"Lít dầu",
+data:Object.values(monthData),
+borderColor:"#ff6600",
+backgroundColor:"rgba(255,102,0,0.2)",
+fill:true
+}]
+},
+
+options:{
+plugins:{
+datalabels:{
+color:"red",
+font:{size:16,weight:"bold"},
+anchor:"end",
+align:"top"
+}
+}
+},
+
+plugins:[ChartDataLabels]
+
+});
+
+}
 
         function formatDateTime(date) {
 
