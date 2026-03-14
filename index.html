@@ -115,7 +115,8 @@
             overflow-y: auto;
         }
 
-        thead, tbody tr {
+        thead,
+        tbody tr {
             display: table;
             width: 100%;
             table-layout: fixed;
@@ -297,6 +298,8 @@
         </div>
 
         <div class="card">
+            <label>Năm</label>
+            <select id="pivotYear" onchange="buildPivot()"></select>
 
             <h3>TỔNG HỢP SỐ LƯỢNG LÃNH THEO THÁNG</h3>
 
@@ -420,6 +423,8 @@
 
                 }));
 
+                initPivotYear();
+
                 applyFilter();
 
             }
@@ -486,7 +491,7 @@
             render(filteredRecords);
             buildCharts(filteredRecords);
             buildMonthChart(allRecords);
-            buildPivot(filteredRecords);
+            buildPivot();
             updateStats(filteredRecords);
 
         }
@@ -658,66 +663,66 @@
 
         function buildMonthChart(data) {
 
-let car = filterCar.value;
-let currentYear = new Date().getFullYear();
+            let car = filterCar.value;
+            let currentYear = new Date().getFullYear();
 
-let monthData = {
-"01":0,"02":0,"03":0,"04":0,"05":0,"06":0,
-"07":0,"08":0,"09":0,"10":0,"11":0,"12":0
-};
+            let monthData = {
+                "01": 0, "02": 0, "03": 0, "04": 0, "05": 0, "06": 0,
+                "07": 0, "08": 0, "09": 0, "10": 0, "11": 0, "12": 0
+            };
 
-data.forEach(r => {
+            data.forEach(r => {
 
-let d = new Date(r.date);
+                let d = new Date(r.date);
 
-let year = d.getFullYear();
-let month = String(d.getMonth()+1).padStart(2,'0');
+                let year = d.getFullYear();
+                let month = String(d.getMonth() + 1).padStart(2, '0');
 
-if(year === currentYear){
+                if (year === currentYear) {
 
-if(car === "" || r.plateNumber === car){
+                    if (car === "" || r.plateNumber === car) {
 
-monthData[month] += Number(r.fuelAmount) || 0;
+                        monthData[month] += Number(r.fuelAmount) || 0;
 
-}
+                    }
 
-}
+                }
 
-});
+            });
 
-if(chartMonth) chartMonth.destroy();
+            if (chartMonth) chartMonth.destroy();
 
-chartMonth = new Chart(document.getElementById("chartMonth"),{
+            chartMonth = new Chart(document.getElementById("chartMonth"), {
 
-type:"line",
+                type: "line",
 
-data:{
-labels:Object.keys(monthData),
-datasets:[{
-label:"Lít dầu",
-data:Object.values(monthData),
-borderColor:"#ff6600",
-backgroundColor:"rgba(255,102,0,0.2)",
-fill:true
-}]
-},
+                data: {
+                    labels: Object.keys(monthData),
+                    datasets: [{
+                        label: "Lít dầu",
+                        data: Object.values(monthData),
+                        borderColor: "#ff6600",
+                        backgroundColor: "rgba(255,102,0,0.2)",
+                        fill: true
+                    }]
+                },
 
-options:{
-plugins:{
-datalabels:{
-color:"red",
-font:{size:16,weight:"bold"},
-anchor:"end",
-align:"top"
-}
-}
-},
+                options: {
+                    plugins: {
+                        datalabels: {
+                            color: "red",
+                            font: { size: 16, weight: "bold" },
+                            anchor: "end",
+                            align: "top"
+                        }
+                    }
+                },
 
-plugins:[ChartDataLabels]
+                plugins: [ChartDataLabels]
 
-});
+            });
 
-}
+        }
 
         function formatDateTime(date) {
 
@@ -734,110 +739,127 @@ plugins:[ChartDataLabels]
 
         }
 
-        function buildPivot(data) {
+        function buildPivot() {
 
-let months = new Set();
-let cars = new Set();
-let map = {};
-let monthTotal = {};
+            let year = Number(pivotYear.value);
+            let carFilter = filterCar.value;
 
-data.forEach(r => {
+            let months = [
+                "01", "02", "03", "04", "05", "06",
+                "07", "08", "09", "10", "11", "12"
+            ];
 
-let d = new Date(r.date);
-let m = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0');
+            let cars = new Set();
+            let map = {};
+            let monthTotal = {};
 
-months.add(m);
-cars.add(r.plateNumber);
+            months.forEach(m => monthTotal[m] = 0);
 
-if (!map[r.plateNumber]) map[r.plateNumber] = {};
-if (!monthTotal[m]) monthTotal[m] = 0;
+            allRecords.forEach(r => {
 
-map[r.plateNumber][m] = (map[r.plateNumber][m] || 0) + Number(r.fuelAmount);
-monthTotal[m] += Number(r.fuelAmount);
+                let d = new Date(r.date);
 
-});
+                let y = d.getFullYear();
+                let m = String(d.getMonth() + 1).padStart(2, '0');
 
-months = [...months].sort();
-cars = [...cars].sort();
+                if (y !== year) return;
 
-pivotHead.innerHTML =
-"<tr><th>Xe</th>" +
-months.map(m => "<th>" + m + "</th>").join("") +
-"<th>Tổng</th></tr>";
+                if (carFilter && r.plateNumber !== carFilter) return;
 
-let html = "";
+                cars.add(r.plateNumber);
 
-/* ===== dòng TOTAL ===== */
+                if (!map[r.plateNumber]) map[r.plateNumber] = {};
 
-let totalRow = "<tr style='font-weight:bold;background:#f2f2f2'><td>Total</td>";
+                map[r.plateNumber][m] =
+                    (map[r.plateNumber][m] || 0) + Number(r.fuelAmount);
 
-let grandTotal = 0;
+                monthTotal[m] += Number(r.fuelAmount);
 
-months.forEach(m => {
+            });
 
-let v = monthTotal[m] || 0;
+            cars = [...cars].sort();
 
-totalRow += "<td>" + v + "</td>";
-grandTotal += v;
+            pivotHead.innerHTML =
+                "<tr><th>Xe</th>" +
+                months.map(m => `<th>${year}-${m}</th>`).join("") +
+                "<th>Tổng</th></tr>";
 
-});
+            let html = "";
 
-totalRow += "<td>" + grandTotal + "</td></tr>";
+            /* TOTAL ROW */
 
-html += totalRow;
+            let totalRow = "<tr style='font-weight:bold;background:#f2f2f2'><td>Total</td>";
 
-/* ===== dữ liệu từng xe ===== */
+            let grandTotal = 0;
 
-cars.forEach(car => {
+            months.forEach(m => {
 
-let total = 0;
-let row = "<tr><td>" + car + "</td>";
+                let v = monthTotal[m] || 0;
 
-months.forEach(m => {
+                totalRow += `<td>${v}</td>`;
 
-let v = (map[car] && map[car][m]) ? map[car][m] : 0;
+                grandTotal += v;
 
-row += "<td>" + v + "</td>";
-total += v;
+            });
 
-});
+            totalRow += `<td>${grandTotal}</td></tr>`;
 
-row += "<td>" + total + "</td></tr>";
+            html += totalRow;
 
-html += row;
+            /* CAR ROWS */
 
-});
+            cars.forEach(car => {
 
-pivotBody.innerHTML = html;
+                let total = 0;
 
-}
+                let row = `<tr><td>${car}</td>`;
+
+                months.forEach(m => {
+
+                    let v = map[car]?.[m] || 0;
+
+                    row += `<td>${v}</td>`;
+
+                    total += v;
+
+                });
+
+                row += `<td>${total}</td></tr>`;
+
+                html += row;
+
+            });
+
+            pivotBody.innerHTML = html;
+
+        }
 
         function exportExcel() {
 
-                let csv = "Date,Car,Driver,Liters,Km,Created Time\n";
-                
-                filteredRecords.forEach(r => {
-                
+            let csv = "Date,Car,Driver,Liters,Km,Created Time\n";
+
+            filteredRecords.forEach(r => {
+
                 let d = new Date(r.date).toISOString().slice(0, 10);
                 let created = formatDateTime(r.createdAt);
-                
+
                 csv += d + "," +
-                       r.plateNumber + "," +
-                       r.driverName + "," +
-                       r.fuelAmount + "," +
-                       r.endKm + "," +
-                       created + "\n";
-                
-                });
-                
-                const blob = new Blob([csv]);
-                const a = document.createElement("a");
-                
-                a.href = URL.createObjectURL(blob);
-                a.download = "fuel_report.csv";
-                a.click();
-                
-                }
+                    r.plateNumber + "," +
+                    r.driverName + "," +
+                    r.fuelAmount + "," +
+                    r.endKm + "," +
+                    created + "\n";
+
+            });
+
+            const blob = new Blob([csv]);
+            const a = document.createElement("a");
+
+            a.href = URL.createObjectURL(blob);
+            a.download = "fuel_report.csv";
+            a.click();
+
+        }
 
         function exportPivot() {
 
@@ -933,10 +955,29 @@ pivotBody.innerHTML = html;
 
         load();
 
+        function initPivotYear() {
+
+            let years = new Set();
+
+            allRecords.forEach(r => {
+                let y = new Date(r.date).getFullYear();
+                years.add(y);
+            });
+
+            years = [...years].sort();
+
+            pivotYear.innerHTML = years
+                .map(y => `<option value="${y}">${y}</option>`)
+                .join("");
+
+            pivotYear.value = new Date().getFullYear();
+
+        }
+
+
+
     </script>
 
 </body>
 
 </html>
-
-
