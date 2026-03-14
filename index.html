@@ -777,24 +777,30 @@
 
         function exportExcel() {
 
-            let csv = "Date,Car,Driver,Liters,Km\n";
-
-            filteredRecords.forEach(r => {
-
+                let csv = "Date,Car,Driver,Liters,Km,Created Time\n";
+                
+                filteredRecords.forEach(r => {
+                
                 let d = new Date(r.date).toISOString().slice(0, 10);
-
-                csv += d + "," + r.plateNumber + "," + r.driverName + "," + r.fuelAmount + "," + r.endKm + "\n";
-
-            });
-
-            const blob = new Blob([csv]);
-            const a = document.createElement("a");
-
-            a.href = URL.createObjectURL(blob);
-            a.download = "fuel_report.csv";
-            a.click();
-
-        }
+                let created = formatDateTime(r.createdAt);
+                
+                csv += d + "," +
+                       r.plateNumber + "," +
+                       r.driverName + "," +
+                       r.fuelAmount + "," +
+                       r.endKm + "," +
+                       created + "\n";
+                
+                });
+                
+                const blob = new Blob([csv]);
+                const a = document.createElement("a");
+                
+                a.href = URL.createObjectURL(blob);
+                a.download = "fuel_report.csv";
+                a.click();
+                
+                }
 
         function exportPivot() {
 
