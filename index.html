@@ -149,22 +149,22 @@
 
             <div class="stat">
                 <h3 id="totalFuel">0</h3>
-                <p>Tổng lít dầu</p>
+                <p>TỔNG SỐ LÍT XIN LÃNH</p>
             </div>
 
             <div class="stat">
                 <h3 id="totalTrips">0</h3>
-                <p>Số lần lấy dầu</p>
+                <p>TỔNG SỐ LẦN ĐĂNG KÝ</p>
             </div>
 
             <div class="stat">
-                <h3 id="topCar">-</h3>
-                <p>Xe tiêu thụ nhiều nhất</p>
+                <h3 id="totalKm">0</h3>
+                <p>TỔNG SỐ KM ĐÃ ĐI</p>
             </div>
 
             <div class="stat">
                 <h3 id="avgFuel">0</h3>
-                <p>Trung bình lít/lần</p>
+                <p>TRUNG BÌNH LÍT/LẦN</p>
             </div>
 
         </div>
@@ -291,14 +291,14 @@
 
         <div class="card">
 
-            <h3>Xu hướng theo tháng</h3>
+            <h3>XU HƯỚNG LÃNH THEO THÁNG</h3>
             <canvas id="chartMonth"></canvas>
 
         </div>
 
         <div class="card">
 
-            <h3>Pivot theo tháng</h3>
+            <h3>TỔNG HỢP SỐ LƯỢNG LÃNH THEO THÁNG</h3>
 
             <table>
                 <thead id="pivotHead"></thead>
@@ -367,7 +367,10 @@
             }
 
             // Keep the date text synced after changing innerHTML
-            prevKmDate.innerText = new Date(new Date(fuelDate.value || formatDateLocal(new Date())).setDate(new Date(fuelDate.value || formatDateLocal(new Date())).getDate() - 1)).toISOString().slice(0, 10);
+            const dateValue = fuelDate.value || formatDateLocal(new Date());
+            const d = new Date(dateValue);
+            d.setDate(d.getDate() - 1);
+            prevKmDate.innerText = formatDateLocal(d);
         }
 
         fuelDate.addEventListener("change", updatePrevKmDate);
@@ -375,8 +378,8 @@
         updatePrevKmDate();
 
         const now = new Date();
-        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
+        const firstDay = formatDateLocal(new Date(now.getFullYear(), now.getMonth(), 1));
+        const lastDay = formatDateLocal(new Date(now.getFullYear(), now.getMonth() + 1, 0));
 
         startDate.value = firstDay;
         endDate.value = lastDay;
@@ -412,7 +415,8 @@
                     fuelAmount: Number(r.fuelAmount) || 0,
                     date: r.date,
                     createdAt: r.createdAt,
-                    endKm: Number(r.endKm) || 0
+                    endKm: Number(r.endKm) || 0,
+                    prevKm: Number(r.prevKm) || 0
 
                 }));
 
@@ -439,7 +443,7 @@
 
         function filterToday() {
 
-            let today = new Date().toISOString().slice(0, 10);
+            let today = formatDateLocal(new Date());
 
             startDate.value = today;
             endDate.value = today;
@@ -526,22 +530,47 @@
 
             });
 
-            let topCar = "-";
-            let max = 0;
+            let totalKm = 0;
 
-            for (let c in carTotal) {
+            let dataToUse = data.length > 0 ? data : allRecords;
 
-                if (carTotal[c] > max) {
-                    max = carTotal[c];
-                    topCar = c;
+            if (dataToUse.length > 0) {
+                // Nhóm theo xe
+                let carData = {};
+                dataToUse.forEach(r => {
+                    if (!carData[r.plateNumber]) carData[r.plateNumber] = [];
+                    carData[r.plateNumber].push(r);
+                });
+
+                for (let car in carData) {
+                    let records = carData[car];
+                    // Nhóm theo ngày cho xe này
+                    let dayKm = {};
+                    records.forEach(r => {
+                        if (!dayKm[r.date]) dayKm[r.date] = [];
+                        dayKm[r.date].push({ km: Number(r.endKm) || 0, stt: r.stt });
+                    });
+
+                    let dates = Object.keys(dayKm).sort();
+                    if (dates.length > 0) {
+                        let minDate = dates[0];
+                        let maxDate = dates[dates.length - 1];
+
+                        // Lấy km cuối ngày của ngày nhỏ nhất
+                        let minKm = dayKm[minDate].sort((a, b) => b.stt - a.stt)[0].km;
+
+                        // Lấy km cuối ngày của ngày lớn nhất
+                        let maxKm = dayKm[maxDate].sort((a, b) => b.stt - a.stt)[0].km;
+
+                        totalKm += maxKm - minKm;
+                    }
                 }
-
             }
 
             document.getElementById("totalFuel").innerText = totalFuel;
             document.getElementById("totalTrips").innerText = data.length;
             document.getElementById("avgFuel").innerText = (data.length ? (totalFuel / data.length).toFixed(1) : 0);
-            document.getElementById("topCar").innerText = topCar;
+            document.getElementById("totalKm").innerText = totalKm;
 
         }
 
