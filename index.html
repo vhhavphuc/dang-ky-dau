@@ -736,56 +736,81 @@ plugins:[ChartDataLabels]
 
         function buildPivot(data) {
 
-            let months = new Set();
-            let cars = new Set();
-            let map = {};
+let months = new Set();
+let cars = new Set();
+let map = {};
+let monthTotal = {};
 
-            data.forEach(r => {
+data.forEach(r => {
 
-                let d = new Date(r.date);
-                let m = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0');
+let d = new Date(r.date);
+let m = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0');
 
-                months.add(m);
-                cars.add(r.plateNumber);
+months.add(m);
+cars.add(r.plateNumber);
 
-                if (!map[r.plateNumber]) map[r.plateNumber] = {};
+if (!map[r.plateNumber]) map[r.plateNumber] = {};
+if (!monthTotal[m]) monthTotal[m] = 0;
 
-                map[r.plateNumber][m] = (map[r.plateNumber][m] || 0) + Number(r.fuelAmount);
+map[r.plateNumber][m] = (map[r.plateNumber][m] || 0) + Number(r.fuelAmount);
+monthTotal[m] += Number(r.fuelAmount);
 
-            });
+});
 
-            months = [...months].sort();
-            cars = [...cars].sort();
+months = [...months].sort();
+cars = [...cars].sort();
 
-            pivotHead.innerHTML = "<tr><th>Xe</th>" + months.map(m => "<th>" + m + "</th>").join("") + "<th>Tổng</th></tr>";
+pivotHead.innerHTML =
+"<tr><th>Xe</th>" +
+months.map(m => "<th>" + m + "</th>").join("") +
+"<th>Tổng</th></tr>";
 
-            let html = "";
+let html = "";
 
-            cars.forEach(car => {
+/* ===== dòng TOTAL ===== */
 
-                let total = 0;
+let totalRow = "<tr style='font-weight:bold;background:#f2f2f2'><td>Total</td>";
 
-                let row = "<tr><td>" + car + "</td>";
+let grandTotal = 0;
 
-                months.forEach(m => {
+months.forEach(m => {
 
-                    let v = (map[car] && map[car][m]) ? map[car][m] : 0;
+let v = monthTotal[m] || 0;
 
-                    row += "<td>" + v + "</td>";
+totalRow += "<td>" + v + "</td>";
+grandTotal += v;
 
-                    total += v;
+});
 
-                });
+totalRow += "<td>" + grandTotal + "</td></tr>";
 
-                row += "<td>" + total + "</td></tr>";
+html += totalRow;
 
-                html += row;
+/* ===== dữ liệu từng xe ===== */
 
-            });
+cars.forEach(car => {
 
-            pivotBody.innerHTML = html;
+let total = 0;
+let row = "<tr><td>" + car + "</td>";
 
-        }
+months.forEach(m => {
+
+let v = (map[car] && map[car][m]) ? map[car][m] : 0;
+
+row += "<td>" + v + "</td>";
+total += v;
+
+});
+
+row += "<td>" + total + "</td></tr>";
+
+html += row;
+
+});
+
+pivotBody.innerHTML = html;
+
+}
 
         function exportExcel() {
 
