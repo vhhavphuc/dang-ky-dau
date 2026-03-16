@@ -133,6 +133,10 @@
             border-bottom: 1px solid #ddd;
             text-align: center;
         }
+        #chartMonth{
+        height:250px !important;
+        max-height:250px;
+        }
     </style>
 
 </head>
@@ -291,7 +295,7 @@
         <div class="card">
 
             <h3>XU HƯỚNG LÃNH THEO THÁNG</h3>
-            <canvas id="chartMonth"></canvas>
+            <canvas id="chartMonth" style="height:200px"></canvas>
 
         </div>
 
@@ -716,13 +720,20 @@
 
                 options: {
                     plugins: {
-                        datalabels: {
-                            color: "red",
-                            font: { size: 15, weight: "bold" },
-                            anchor: "end",
-                            align: "top",
-                            formatter: (v) => formatNumber(v)
+
+                        legend:{
+                            position:"top",
+                            align:"start"
+                        },
+
+                        datalabels:{
+                            color:"red",
+                            font:{ size:15, weight:"bold"},
+                            anchor:"end",
+                            align:"top",
+                            formatter:(v)=>formatNumber(v)
                         }
+
                     }
                 },
 
