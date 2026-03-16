@@ -106,7 +106,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed;
+            table-layout: auto;
         }
 
         tbody {
@@ -132,9 +132,6 @@
             padding: 8px;
             border-bottom: 1px solid #ddd;
             text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
     </style>
 
@@ -201,7 +198,7 @@
                 <input id="driverName" placeholder="Số thẻ lái xe đăng ký dầu" required>
                 <input id="fuelAmount" type="number" placeholder="Số lít dầu đăng ký" required>
                 <label id="FuelDateLabel">Ngày cần lấy dầu <span id="FuelDateShow"></span></label>
-                <input id="fuelDate" type="date" required>
+                <input id="fuelDate" type="date" required>               
 
                 <label id="prevKmLabel">Số Km cuối ngày <span id="prevKmDate"></span></label>
                 <input id="prevKm" type="number" placeholder="Nhập Km cuối ngày" required>
@@ -511,8 +508,8 @@
 <td>${d}</td>
 <td>${r.plateNumber}</td>
 <td>${r.driverName}</td>
-<td>${r.fuelAmount}</td>
-<td>${r.endKm}</td>
+<td>${formatNumber(r.fuelAmount)}</td>
+<td>${formatNumber(r.endKm)}</td>
 <td>${formatDateTime(r.createdAt)}</td>
 </tr>
 `;
@@ -573,10 +570,10 @@
                 }
             }
 
-            document.getElementById("totalFuel").innerText = totalFuel;
-            document.getElementById("totalTrips").innerText = data.length;
-            document.getElementById("avgFuel").innerText = (data.length ? (totalFuel / data.length).toFixed(1) : 0);
-            document.getElementById("totalKm").innerText = totalKm;
+            document.getElementById("totalFuel").innerText = formatNumber(totalFuel);
+            document.getElementById("totalTrips").innerText = formatNumber(data.length);
+            document.getElementById("avgFuel").innerText = formatNumber((data.length ? (totalFuel / data.length).toFixed(1) : 0));
+            document.getElementById("totalKm").innerText = formatNumber(totalKm);
 
         }
 
@@ -611,16 +608,24 @@
                 },
 
                 options: {
+                    layout: {
+                        padding: {
+                            top: 20,
+                            right: 20,
+                            bottom: 20,
+                            left: 20
+                        }
+                    },
                     plugins: {
                         datalabels: {
                             color: "red",
                             font: {
-                                size: 16,
+                                size: 13,
                                 weight: "bold"
                             },
                             anchor: "end",
                             align: "top",
-                            formatter: (v) => v
+                            formatter: (v) => formatNumber(v)
                         }
                     }
                 },
@@ -648,10 +653,11 @@
                             color: "red",
                             font: {
                                 weight: "bold",
-                                size: 16
+                                size: 13
                             },
                             anchor: "end",
-                            align: "top"
+                            align: "top",
+                            formatter: (v) => formatNumber(v)
                         }
                     }
                 },
@@ -712,9 +718,10 @@
                     plugins: {
                         datalabels: {
                             color: "red",
-                            font: { size: 16, weight: "bold" },
+                            font: { size: 15, weight: "bold" },
                             anchor: "end",
-                            align: "top"
+                            align: "top",
+                            formatter: (v) => formatNumber(v)
                         }
                     }
                 },
@@ -797,13 +804,13 @@
 
                 let v = monthTotal[m] || 0;
 
-                totalRow += `<td>${formatNumber(v)}</td>`;
+                totalRow += `<td>${v === 0 ? '' : formatNumber(v)}</td>`;
 
                 grandTotal += v;
 
             });
 
-            totalRow += `<td>${formatNumber(grandTotal)}</td></tr>`;
+            totalRow += `<td>${grandTotal === 0 ? '' : formatNumber(grandTotal)}</td></tr>`;
 
             html += totalRow;
 
@@ -819,13 +826,13 @@
 
                     let v = map[car]?.[m] || 0;
 
-                    row += `<td>${formatNumber(v)}</td>`;
+                    row += `<td>${v === 0 ? '' : formatNumber(v)}</td>`;
 
                     total += v;
 
                 });
 
-                row += `<td>${formatNumber(total)}</td></tr>`;
+                row += `<td>${total === 0 ? '' : formatNumber(total)}</td></tr>`;
 
                 html += row;
 
