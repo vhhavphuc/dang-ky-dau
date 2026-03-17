@@ -270,7 +270,7 @@
 
         <div class="card">
 
-            <h3>Lịch sử</h3>
+            <h3>Bảng chi tiết nhu cầu lãnh dầu</h3>
 
             <table>
 
@@ -293,17 +293,17 @@
         </div>
 
         <div class="card">
-            <h3>Biểu đồ theo ngày</h3>
+            <h3>BIỂU ĐỒ NHU CẦU LÃNH DẦU THEO NGÀY ( Lít )</h3>
             <canvas id="chartDay"></canvas>
         </div>
 
         <div class="card">
-            <h3>Top xe tiêu thụ</h3>
+            <h3>TOP XE TIÊU THỤ THEO THÁNG ( Lít )</h3>
             <canvas id="chartCar"></canvas>
         </div>
 
         <div class="card">
-            <h3>XU HƯỚNG LÃNH THEO THÁNG</h3>
+            <h3>XU HƯỚNG LÃNH THEO THÁNG ( Lít )</h3>
             <canvas id="chartMonth"></canvas>
         </div>
 
@@ -311,7 +311,7 @@
             <label>Năm</label>
             <select id="pivotYear" onchange="buildPivot(); buildMonthChart(allRecords);"></select>
 
-            <h3>TỔNG HỢP SỐ LƯỢNG LÃNH THEO THÁNG</h3>
+            <h3>TỔNG HỢP SỐ LƯỢNG LÃNH THEO THÁNG ( Lít )</h3>
 
             <table>
                 <thead id="pivotHead"></thead>
@@ -663,6 +663,9 @@ recordsTable.innerHTML = html;
                         }
                     },
                     plugins: {
+                        legend: {
+                            display: false
+                             },
                         datalabels: {
                             color: "red",
                             font: {
@@ -695,6 +698,9 @@ recordsTable.innerHTML = html;
 
                 options: {
                     plugins: {
+                        legend: {
+                        display: false
+                            },
                         datalabels: {
                             color: "red",
                             font: {
@@ -765,8 +771,9 @@ recordsTable.innerHTML = html;
                     plugins: {
 
                         legend: {
+                            display: false/*
                             position: "top",
-                            align: "start"
+                            align: "start"*/
                         },
 
                         datalabels: {
