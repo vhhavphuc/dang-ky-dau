@@ -133,9 +133,23 @@
             border-bottom: 1px solid #ddd;
             text-align: center;
         }
-        #chartMonth{
-        height:250px !important;
-        max-height:250px;
+
+        .card canvas {
+            width: 100% !important;
+            height: 260px !important;
+            max-height: 320px;
+        }
+
+        /* Ensure charts respond to container resizing consistently */
+        #chartMonth {
+            height: 260px !important;
+            max-height: 320px;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 
@@ -202,7 +216,7 @@
                 <input id="driverName" placeholder="Số thẻ lái xe đăng ký dầu" required>
                 <input id="fuelAmount" type="number" placeholder="Số lít dầu đăng ký" required>
                 <label id="FuelDateLabel">Ngày cần lấy dầu <span id="FuelDateShow"></span></label>
-                <input id="fuelDate" type="date" required>               
+                <input id="fuelDate" type="date" required>
 
                 <label id="prevKmLabel">Số Km cuối ngày <span id="prevKmDate"></span></label>
                 <input id="prevKm" type="number" placeholder="Nhập Km cuối ngày" required>
@@ -278,25 +292,19 @@
 
         </div>
 
-        <div class="grid">
-
-            <div class="card">
-                <h3>Biểu đồ theo ngày</h3>
-                <canvas id="chartDay"></canvas>
-            </div>
-
-            <div class="card">
-                <h3>Top xe tiêu thụ</h3>
-                <canvas id="chartCar"></canvas>
-            </div>
-
+        <div class="card">
+            <h3>Biểu đồ theo ngày</h3>
+            <canvas id="chartDay"></canvas>
         </div>
 
         <div class="card">
+            <h3>Top xe tiêu thụ</h3>
+            <canvas id="chartCar"></canvas>
+        </div>
 
+        <div class="card">
             <h3>XU HƯỚNG LÃNH THEO THÁNG</h3>
-            <canvas id="chartMonth" style="height:200px"></canvas>
-
+            <canvas id="chartMonth"></canvas>
         </div>
 
         <div class="card">
@@ -309,14 +317,20 @@
                 <thead id="pivotHead"></thead>
                 <tbody id="pivotBody"></tbody>
             </table>
-
         </div>
 
     </div>
 
     <script>
+        
+        const CONFIG={
+        API:"https://script.google.com/macros/s/AKfycbws3C_yR1yb4Q1l2MTR3K_Fv1j_0PBht8eRSZnuP7cJOndQY3QSzEhnB3-UsWBei1Ic/exec"
+        };
 
-        const API = "https://script.google.com/macros/s/AKfycbws3C_yR1yb4Q1l2MTR3K_Fv1j_0PBht8eRSZnuP7cJOndQY3QSzEhnB3-UsWBei1Ic/exec";
+        const totalFuelEl = document.getElementById("totalFuel");
+        const totalTripsEl = document.getElementById("totalTrips");
+        const avgFuelEl = document.getElementById("avgFuel");
+        const totalKmEl = document.getElementById("totalKm");
 
         function formatDateLocal(date) {
 
@@ -412,18 +426,39 @@
 
             if (cb === "load") {
 
-                allRecords = data.map(r => ({
+                allRecords = data.map(r=>{
 
-                    stt: r.stt,
-                    plateNumber: r.plateNumber,
-                    driverName: r.driverName,
-                    fuelAmount: Number(r.fuelAmount) || 0,
-                    date: r.date,
-                    createdAt: r.createdAt,
-                    endKm: Number(r.endKm) || 0,
-                    prevKm: Number(r.prevKm) || 0
+                    let d = new Date(r.date);
 
-                }));
+                    return{
+
+                    stt:Number(r.stt),
+
+                    plateNumber:r.plateNumber,
+
+                    driverName:r.driverName,
+
+                    fuelAmount:Number(r.fuelAmount)||0,
+
+                    date:r.date,
+
+                    createdAt:r.createdAt,
+
+                    endKm:Number(r.endKm)||0,
+
+                    prevKm:Number(r.prevKm)||0,
+
+                    dateObj:d,
+
+                    year:d.getFullYear(),
+
+                    month:String(d.getMonth()+1).padStart(2,'0'),
+
+                    day:d.toISOString().slice(0,10)
+
+                    }
+
+                });
 
                 initPivotYear();
 
@@ -445,7 +480,7 @@
         }
 
         function load() {
-            jsonp(API + "?action=getRecords", "load");
+            jsonp(CONFIG.API+"?action=getRecords","load");
         }
 
         function filterToday() {
@@ -500,13 +535,13 @@
 
         function render(data) {
 
-            recordsTable.innerHTML = "";
+            let html = "";
 
-            data.forEach(r => {
+data.forEach(r => {
 
-                let d = new Date(r.date).toISOString().slice(0, 10);
+let d = new Date(r.date).toISOString().slice(0,10);
 
-                recordsTable.innerHTML += `
+html += `
 <tr>
 <td>${r.stt}</td>
 <td>${d}</td>
@@ -518,13 +553,18 @@
 </tr>
 `;
 
-            });
+});
+
+recordsTable.innerHTML = html;
+
+            
 
         }
 
         function updateStats(data) {
 
             let totalFuel = 0;
+            let totalTrips = data.length;
             let carTotal = {};
 
             data.forEach(r => {
@@ -574,10 +614,12 @@
                 }
             }
 
-            document.getElementById("totalFuel").innerText = formatNumber(totalFuel);
-            document.getElementById("totalTrips").innerText = formatNumber(data.length);
-            document.getElementById("avgFuel").innerText = formatNumber((data.length ? (totalFuel / data.length).toFixed(1) : 0));
-            document.getElementById("totalKm").innerText = formatNumber(totalKm);
+                        let avgFuel = totalTrips ? totalFuel / totalTrips : 0;
+
+                        totalFuelEl.innerText = formatNumber(totalFuel);
+                        totalTripsEl.innerText = totalTrips;
+                        avgFuelEl.innerText = formatNumber(avgFuel);
+                        totalKmEl.innerText = formatNumber(totalKm);
 
         }
 
@@ -677,9 +719,10 @@
             let car = filterCar.value;
             let currentYear = Number(pivotYear.value); // dùng năm của pivot
 
-            let monthData = {
-                "01": 0, "02": 0, "03": 0, "04": 0, "05": 0, "06": 0,
-                "07": 0, "08": 0, "09": 0, "10": 0, "11": 0, "12": 0
+            let monthData = {};
+
+            for(let i=1;i<=12;i++){
+            monthData[String(i).padStart(2,'0')] = 0;
             };
 
             data.forEach(r => {
@@ -721,17 +764,17 @@
                 options: {
                     plugins: {
 
-                        legend:{
-                            position:"top",
-                            align:"start"
+                        legend: {
+                            position: "top",
+                            align: "start"
                         },
 
-                        datalabels:{
-                            color:"red",
-                            font:{ size:15, weight:"bold"},
-                            anchor:"end",
-                            align:"top",
-                            formatter:(v)=>formatNumber(v)
+                        datalabels: {
+                            color: "red",
+                            font: { size: 15, weight: "bold" },
+                            anchor: "end",
+                            align: "top",
+                            formatter: (v) => formatNumber(v)
                         }
 
                     }
@@ -968,7 +1011,7 @@
                 prevKm: prevKm.value
             };
 
-            jsonp(API + "?action=add&data=" + encodeURIComponent(JSON.stringify(data)), "add");
+            jsonp(CONFIG.API + "?action=add&data=" + encodeURIComponent(JSON.stringify(data)), "add");
 
         });
 
@@ -993,7 +1036,7 @@
 
         }
 
-        function formatNumber(n){
+        function formatNumber(n) {
             return Number(n || 0).toLocaleString("vi-VN");
         }
 
