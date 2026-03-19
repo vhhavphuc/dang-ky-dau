@@ -322,11 +322,11 @@
     </div>
 
     <script>
-        
-        const CONFIG={
-        API:"https://script.google.com/macros/s/AKfycbws3C_yR1yb4Q1l2MTR3K_Fv1j_0PBht8eRSZnuP7cJOndQY3QSzEhnB3-UsWBei1Ic/exec"
-        };
 
+        const CONFIG = {
+            API: "https://script.google.com/macros/s/AKfycbws3C_yR1yb4Q1l2MTR3K_Fv1j_0PBht8eRSZnuP7cJOndQY3QSzEhnB3-UsWBei1Ic/exec"
+        };
+        let pivotCache = {};
         const totalFuelEl = document.getElementById("totalFuel");
         const totalTripsEl = document.getElementById("totalTrips");
         const avgFuelEl = document.getElementById("avgFuel");
@@ -426,39 +426,30 @@
 
             if (cb === "load") {
 
-                allRecords = data.map(r=>{
+                allRecords = data.map(r => {
 
                     let d = new Date(r.date);
 
-                    return{
+                    let day = d.toISOString().slice(0, 10);
 
-                    stt:Number(r.stt),
+                    return {
+                        stt: Number(r.stt),
+                        plateNumber: r.plateNumber,
+                        driverName: r.driverName,
+                        fuelAmount: Number(r.fuelAmount) || 0,
+                        date: day, // chuẩn hóa luôn
+                        createdAt: r.createdAt,
+                        endKm: Number(r.endKm) || 0,
+                        prevKm: Number(r.prevKm) || 0,
 
-                    plateNumber:r.plateNumber,
-
-                    driverName:r.driverName,
-
-                    fuelAmount:Number(r.fuelAmount)||0,
-
-                    date:r.date,
-
-                    createdAt:r.createdAt,
-
-                    endKm:Number(r.endKm)||0,
-
-                    prevKm:Number(r.prevKm)||0,
-
-                    dateObj:d,
-
-                    year:d.getFullYear(),
-
-                    month:String(d.getMonth()+1).padStart(2,'0'),
-
-                    day:d.toISOString().slice(0,10)
-
-                    }
+                        // cache sẵn
+                        year: d.getFullYear(),
+                        month: String(d.getMonth() + 1).padStart(2, '0'),
+                        day: day
+                    };
 
                 });
+                buildPivotCache();
 
                 initPivotYear();
 
@@ -478,9 +469,30 @@
             }
 
         }
+        function buildPivotCache() {
+
+            pivotCache = {};
+
+            for (let i = 0; i < allRecords.length; i++) {
+
+                let r = allRecords[i];
+
+                let year = r.year;
+                let month = r.month;
+                let car = r.plateNumber;
+                let fuel = r.fuelAmount;
+
+                // tạo cấu trúc
+                if (!pivotCache[year]) pivotCache[year] = {};
+                if (!pivotCache[year][car]) pivotCache[year][car] = {};
+                if (!pivotCache[year][car][month]) pivotCache[year][car][month] = 0;
+
+                pivotCache[year][car][month] += fuel;
+            }
+        }
 
         function load() {
-            jsonp(CONFIG.API+"?action=getRecords","load");
+            jsonp(CONFIG.API + "?action=getRecords", "load");
         }
 
         function filterToday() {
@@ -489,7 +501,6 @@
 
             startDate.value = today;
             endDate.value = lastDay;
-        
 
             applyFilter();
 
@@ -536,30 +547,27 @@
 
         function render(data) {
 
+            const LIMIT = 300; // chỉ render 300 dòng
             let html = "";
 
-data.forEach(r => {
+            let len = Math.min(data.length, LIMIT);
 
-let d = new Date(r.date).toISOString().slice(0,10);
+            for (let i = 0; i < len; i++) {
+                let r = data[i];
 
-html += `
-<tr>
-<td>${r.stt}</td>
-<td>${d}</td>
-<td>${r.plateNumber}</td>
-<td>${r.driverName}</td>
-<td>${formatNumber(r.fuelAmount)}</td>
-<td>${formatNumber(r.endKm)}</td>
-<td>${formatDateTime(r.createdAt)}</td>
-</tr>
-`;
+                html += `
+        <tr>
+        <td>${r.stt}</td>
+        <td>${r.day}</td>
+        <td>${r.plateNumber}</td>
+        <td>${r.driverName}</td>
+        <td>${formatNumber(r.fuelAmount)}</td>
+        <td>${formatNumber(r.endKm)}</td>
+        <td>${formatDateTime(r.createdAt)}</td>
+        </tr>`;
+            }
 
-});
-
-recordsTable.innerHTML = html;
-
-            
-
+            recordsTable.innerHTML = html;
         }
 
         function updateStats(data) {
@@ -615,12 +623,12 @@ recordsTable.innerHTML = html;
                 }
             }
 
-                        let avgFuel = totalTrips ? totalFuel / totalTrips : 0;
+            let avgFuel = totalTrips ? totalFuel / totalTrips : 0;
 
-                        totalFuelEl.innerText = formatNumber(totalFuel);
-                        totalTripsEl.innerText = totalTrips;
-                        avgFuelEl.innerText = formatNumber(avgFuel);
-                        totalKmEl.innerText = formatNumber(totalKm);
+            totalFuelEl.innerText = formatNumber(totalFuel);
+            totalTripsEl.innerText = totalTrips;
+            avgFuelEl.innerText = formatNumber(avgFuel);
+            totalKmEl.innerText = formatNumber(totalKm);
 
         }
 
@@ -631,7 +639,7 @@ recordsTable.innerHTML = html;
 
             data.forEach(r => {
 
-                let d = new Date(r.date).toISOString().slice(0, 10);
+                let d = r.day;
 
                 day[d] = (day[d] || 0) + Number(r.fuelAmount || 0);
                 car[r.plateNumber] = (car[r.plateNumber] || 0) + Number(r.fuelAmount || 0);
@@ -666,7 +674,7 @@ recordsTable.innerHTML = html;
                     plugins: {
                         legend: {
                             display: false
-                             },
+                        },
                         datalabels: {
                             color: "red",
                             font: {
@@ -700,8 +708,8 @@ recordsTable.innerHTML = html;
                 options: {
                     plugins: {
                         legend: {
-                        display: false
-                            },
+                            display: false
+                        },
                         datalabels: {
                             color: "red",
                             font: {
@@ -728,8 +736,8 @@ recordsTable.innerHTML = html;
 
             let monthData = {};
 
-            for(let i=1;i<=12;i++){
-            monthData[String(i).padStart(2,'0')] = 0;
+            for (let i = 1; i <= 12; i++) {
+                monthData[String(i).padStart(2, '0')] = 0;
             };
 
             data.forEach(r => {
@@ -823,32 +831,35 @@ recordsTable.innerHTML = html;
             let map = {};
             let monthTotal = {};
 
-            months.forEach(m => monthTotal[m] = 0);
+            for (let i = 0; i < months.length; i++) {
+                monthTotal[months[i]] = 0;
+            }
 
-            allRecords.forEach(r => {
+            // ✅ VẪN dùng allRecords (đúng logic pivot)
+            for (let i = 0; i < allRecords.length; i++) {
 
-                let d = new Date(r.date);
+                let r = allRecords[i];
 
-                let y = d.getFullYear();
-                let m = String(d.getMonth() + 1).padStart(2, '0');
+                // ⚡ dùng cache, KHÔNG new Date
+                if (r.year !== year) continue;
 
-                if (y !== year) return;
+                if (carFilter && r.plateNumber !== carFilter) continue;
 
-                if (carFilter && r.plateNumber !== carFilter) return;
+                let m = r.month;
 
                 cars.add(r.plateNumber);
 
                 if (!map[r.plateNumber]) map[r.plateNumber] = {};
 
                 map[r.plateNumber][m] =
-                    (map[r.plateNumber][m] || 0) + Number(r.fuelAmount);
+                    (map[r.plateNumber][m] || 0) + r.fuelAmount;
 
-                monthTotal[m] += Number(r.fuelAmount);
-
-            });
+                monthTotal[m] += r.fuelAmount;
+            }
 
             cars = [...cars].sort();
 
+            // ===== HEADER =====
             pivotHead.innerHTML =
                 "<tr><th>Xe</th>" +
                 months.map(m => `<th>${year}-${m}</th>`).join("") +
@@ -856,52 +867,49 @@ recordsTable.innerHTML = html;
 
             let html = "";
 
-            /* TOTAL ROW */
-
+            // ===== TOTAL =====
             let totalRow = "<tr style='font-weight:bold;background:#f2f2f2'><td>Total</td>";
 
             let grandTotal = 0;
 
-            months.forEach(m => {
+            for (let i = 0; i < months.length; i++) {
 
+                let m = months[i];
                 let v = monthTotal[m] || 0;
 
                 totalRow += `<td>${v === 0 ? '' : formatNumber(v)}</td>`;
 
                 grandTotal += v;
-
-            });
+            }
 
             totalRow += `<td>${grandTotal === 0 ? '' : formatNumber(grandTotal)}</td></tr>`;
 
             html += totalRow;
 
-            /* CAR ROWS */
+            // ===== ROW XE =====
+            for (let i = 0; i < cars.length; i++) {
 
-            cars.forEach(car => {
-
+                let car = cars[i];
                 let total = 0;
 
                 let row = `<tr><td>${car}</td>`;
 
-                months.forEach(m => {
+                for (let j = 0; j < months.length; j++) {
 
+                    let m = months[j];
                     let v = map[car]?.[m] || 0;
 
                     row += `<td>${v === 0 ? '' : formatNumber(v)}</td>`;
 
                     total += v;
-
-                });
+                }
 
                 row += `<td>${total === 0 ? '' : formatNumber(total)}</td></tr>`;
 
                 html += row;
-
-            });
+            }
 
             pivotBody.innerHTML = html;
-
         }
 
         function exportExcel() {
@@ -910,7 +918,7 @@ recordsTable.innerHTML = html;
 
             filteredRecords.forEach(r => {
 
-                let d = new Date(r.date).toISOString().slice(0, 10);
+                let d = r.day;
                 let created = formatDateTime(r.createdAt);
 
                 csv += d + "," +
@@ -933,95 +941,158 @@ recordsTable.innerHTML = html;
 
         function exportPivot() {
 
-            let months = new Set();
+            let year = Number(pivotYear.value);
+            let carFilter = filterCar.value;
+
+            let months = [
+                "01", "02", "03", "04", "05", "06",
+                "07", "08", "09", "10", "11", "12"
+            ];
+
             let cars = new Set();
-
-            filteredRecords.forEach(r => {
-
-                let d = new Date(r.date);
-                let month = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0');
-
-                months.add(month);
-                cars.add(r.plateNumber);
-
-            });
-
-            months = [...months].sort();
-            cars = [...cars].sort();
-
             let map = {};
+            let monthTotal = {};
 
-            filteredRecords.forEach(r => {
+            for (let i = 0; i < months.length; i++) {
+                monthTotal[months[i]] = 0;
+            }
 
-                let d = new Date(r.date);
-                let month = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0');
+            // ✅ GIỐNG buildPivot → dùng allRecords
+            for (let i = 0; i < allRecords.length; i++) {
+
+                let r = allRecords[i];
+
+                if (r.year !== year) continue;
+                if (carFilter && r.plateNumber !== carFilter) continue;
+
+                let m = r.month;
+
+                cars.add(r.plateNumber);
 
                 if (!map[r.plateNumber]) map[r.plateNumber] = {};
 
-                map[r.plateNumber][month] = (map[r.plateNumber][month] || 0) + Number(r.fuelAmount);
+                map[r.plateNumber][m] =
+                    (map[r.plateNumber][m] || 0) + r.fuelAmount;
 
-            });
+                monthTotal[m] += r.fuelAmount;
+            }
 
-            let csv = "Xe," + months.join(",") + ",Tong\n";
+            cars = [...cars].sort();
 
-            cars.forEach(car => {
+            // ===== CSV =====
+            let csv = "Xe," + months.map(m => `${year}-${m}`).join(",") + ",Tong\n";
 
-                let row = [car];
+            // ===== TOTAL ROW =====
+            let totalRow = ["Total"];
+            let grandTotal = 0;
+
+            for (let i = 0; i < months.length; i++) {
+                let m = months[i];
+                let v = monthTotal[m] || 0;
+
+                totalRow.push(v === 0 ? "" : v);
+                grandTotal += v;
+            }
+
+            totalRow.push(grandTotal === 0 ? "" : grandTotal);
+
+            csv += totalRow.join(",") + "\n";
+
+            // ===== CAR ROWS =====
+            for (let i = 0; i < cars.length; i++) {
+
+                let car = cars[i];
                 let total = 0;
 
-                months.forEach(m => {
+                let row = [car];
 
-                    let v = (map[car] && map[car][m]) ? map[car][m] : 0;
+                for (let j = 0; j < months.length; j++) {
 
-                    row.push(v);
+                    let m = months[j];
+                    let v = map[car]?.[m] || 0;
+
+                    row.push(v === 0 ? "" : v);
                     total += v;
+                }
 
-                });
-
-                row.push(total);
+                row.push(total === 0 ? "" : total);
 
                 csv += row.join(",") + "\n";
+            }
 
-            });
-
+            // download
             const blob = new Blob([csv]);
             const a = document.createElement("a");
 
             a.href = URL.createObjectURL(blob);
             a.download = "fuel_pivot_report.csv";
             a.click();
-
         }
 
         fuelForm.addEventListener("submit", function (e) {
 
-            e.preventDefault();
+    e.preventDefault();
 
-            const isXn = plateNumber.value.startsWith("XN");
+    const isXn = plateNumber.value.startsWith("XN");
 
-            if (!isXn && !prevKm.value) {
-                alert("Vui lòng nhập Số Km cuối ngày " + prevKmDate.innerText + " trước khi đăng ký.");
+    if (!isXn && !prevKm.value) {
+        alert("Vui lòng nhập Số Km cuối ngày " + prevKmDate.innerText + " trước khi đăng ký.");
+        prevKm.focus();
+        return;
+    }
+
+    if (Number(fuelAmount.value) <= 0) {
+        alert("Số lít phải lớn hơn 0.");
+        fuelAmount.focus();
+        return;
+    }
+
+    // ===== VALIDATE KM KHÔNG ĐƯỢC NHỎ HƠN NGÀY TRƯỚC =====
+    if (!isXn) {
+
+        const car = plateNumber.value;
+        const inputDate = fuelDate.value;
+        const inputKm = Number(prevKm.value);
+
+        let prevRecords = allRecords
+            .filter(r => r.plateNumber === car && r.date < inputDate)
+            .sort((a, b) => {
+                if (a.date > b.date) return -1;
+                if (a.date < b.date) return 1;
+                return b.stt - a.stt;
+            });
+
+        if (prevRecords.length > 0) {
+
+            let lastRecord = prevRecords[0];
+            let lastKm = Number(lastRecord.endKm) || 0;
+
+            if (inputKm < lastKm) {
+                alert(
+                    `❌ Km không hợp lệ!\n\n` +
+                    `Xe: ${car}\n` +
+                    `Ngày trước: ${lastRecord.date}\n` +
+                    `Km trước: ${formatNumber(lastKm)}\n\n` +
+                    `Km nhập phải > Km trước`
+                );
                 prevKm.focus();
                 return;
             }
+        }
+    }
 
-            if (Number(fuelAmount.value) <= 0) {
-                alert("Số lít phải lớn hơn 0.");
-                fuelAmount.focus();
-                return;
-            }
+    // ===== SUBMIT =====
+    const data = {
+        plateNumber: plateNumber.value,
+        driverName: driverName.value,
+        fuelAmount: fuelAmount.value,
+        date: fuelDate.value,
+        prevKm: prevKm.value
+    };
 
-            const data = {
-                plateNumber: plateNumber.value,
-                driverName: driverName.value,
-                fuelAmount: fuelAmount.value,
-                date: fuelDate.value,
-                prevKm: prevKm.value
-            };
+    jsonp(CONFIG.API + "?action=add&data=" + encodeURIComponent(JSON.stringify(data)), "add");
 
-            jsonp(CONFIG.API + "?action=add&data=" + encodeURIComponent(JSON.stringify(data)), "add");
-
-        });
+});
 
         load();
 
