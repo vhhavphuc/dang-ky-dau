@@ -1067,7 +1067,7 @@
             let lastRecord = prevRecords[0];
             let lastKm = Number(lastRecord.endKm) || 0;
 
-            if (inputKm < lastKm) {
+            if (inputKm <= lastKm) {
                 alert(
                     `❌ Km không hợp lệ!\n\n` +
                     `Xe: ${car}\n` +
