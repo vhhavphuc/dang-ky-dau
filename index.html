@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+
     <title>Fuel Management Dashboard</title>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
     <style>
         body {
             font-family: Segoe UI;
@@ -14,8 +19,17 @@
             padding: 30px;
             color: #333;
         }
-        .container { max-width: 1400px; margin: auto; }
-        h2 { color: white; margin-bottom: 20px; }
+
+        .container {
+            max-width: 1400px;
+            margin: auto;
+        }
+
+        h2 {
+            color: white;
+            margin-bottom: 20px;
+        }
+
         .card {
             background: white;
             padding: 20px;
@@ -24,356 +38,363 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
             overflow-x: auto;
         }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .dashboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
         .stat {
-            background: white; padding: 20px; border-radius: 12px;
-            text-align: center; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-        }
-        .stat h3 { margin: 0; font-size: 26px; color: #2a5298; }
-        .stat p { margin: 5px; font-size: 13px; }
-        label { display: block; margin-bottom: 4px; font-weight: 600; }
-        input, select {
-            width: 100%; max-width: 100%; padding: 10px; margin-bottom: 10px;
-            border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box;
-        }
-        button {
-            background: #2a5298; color: white; border: none;
-            padding: 10px 14px; border-radius: 6px; cursor: pointer; margin-right: 5px;
-        }
-        button:hover { background: #1e3c72; }
-        table { width: 100%; border-collapse: collapse; table-layout: auto; }
-        tbody { display: block; max-height: 400px; overflow-y: auto; }
-        thead { display: table; width: 100%; table-layout: fixed; }
-        thead th {
-            position: sticky; top: 0; z-index: 10;
-            background: #2a5298; color: white;
-        }
-        tbody tr { display: table; width: 100%; table-layout: fixed; }
-        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: center; }
-        .card canvas { width: 100% !important; height: 260px !important; max-height: 320px; background: white; }
-        #chartMonth { height: 260px !important; max-height: 320px; }
-        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
-        .tab {
-            position: sticky; top: 0; z-index: 20; overflow: hidden;
-            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
-            border: none; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            border-radius: 8px 8px 0 0; margin-bottom: 0;
-        }
-        .tab button {
-            background-color: transparent; float: left; border: none; outline: none;
-            cursor: pointer; padding: 16px 24px; transition: all 0.3s ease;
-            color: white; font-weight: 500; font-size: 14px; letter-spacing: 0.5px;
-            border-bottom: 3px solid transparent; position: relative;
-        }
-        .tab button:hover { background-color: rgba(255, 255, 255, 0.1); transform: translateY(-1px); }
-        .tab button.active {
-            background-color: white; color: #2a5298;
-            border-bottom: 3px solid #2a5298;
-            box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.05);
-        }
-        .tabcontent { display: none; padding: 6px 12px; border: none; border-top: none; background-color: white; }
-        
-        /* Style cho bảng duyệt xe */
-        .selected-row { background-color: #d0ebff !important; }
-        .duyet-info { 
-            background: #f0f8ff; padding: 15px; border-radius: 8px; 
-            border-left: 4px solid #2a5298; margin-bottom: 15px;
-        }
-        .duyet-info strong { color: #2a5298; }
-
-        /* Cột Xe cố định độ rộng trong bảng pivot */
-        #pivotHead th:first-child,
-        #pivotBody td:first-child {
-            width: 120px;
-            min-width: 120px;
-            max-width: 200px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            position: sticky;
-            left: 0;
             background: white;
-            z-index: 5;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
         }
 
-        #pivotHead th:first-child {
+        .stat h3 {
+            margin: 0;
+            font-size: 26px;
+            color: #2a5298;
+        }
+
+        .stat p {
+            margin: 5px;
+            font-size: 13px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        input,
+        select {
+            width: 100%;
+            max-width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        button {
             background: #2a5298;
             color: white;
-            z-index: 15;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 5px;
         }
 
-        #pivotBody td:first-child {
-            font-weight: 600;
-            background: #f8f9fa;
+        button:hover {
+            background: #1e3c72;
         }
 
-        /* Hover để hiện full text */
-        #pivotBody td:first-child:hover {
-            overflow: visible;
-            white-space: normal;
-            background: #e3f2fd;
-            z-index: 20;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
         }
 
-        /* Bảng pivot scroll ngang nếu cần */
-        .pivot-table-container {
-            overflow-x: auto;
-            max-width: 100%;
+        tbody {
+            display: block;
+            max-height: 400px;
+            overflow-y: auto;
         }
 
-        /* Pivot table column sizing */
-        #pivotHead th:first-child,
-        #pivotBody td:first-child {
-            width: auto;
-            min-width: 100px;
-            max-width: 250px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        #pivotBody td:first-child {
-            text-align: left;
-            padding-left: 12px;
-            font-weight: 600;
-        }
-        #pivotHead th:first-child {
-            text-align: left;
-            padding-left: 12px;
-        }
-    
-        /* Cột Xe tự động theo dữ liệu */
-        #pivotHead th:first-child,
-        #pivotBody td:first-child {
-            width: auto;
-            min-width: fit-content;
-            white-space: nowrap;
-            overflow: visible;
-        }
-
-        /* Các cột tháng chia đều */
-        #pivotHead th:not(:first-child):not(:last-child),
-        #pivotBody td:not(:first-child):not(:last-child) {
-            width: auto;
-            min-width: 60px;
-        }
-
-        /* Cột Tổng */
-        #pivotHead th:last-child,
-        #pivotBody td:last-child {
-            width: auto;
-            min-width: 80px;
-            font-weight: bold;
-        }
-
-        /* Bảng pivot tự động theo nội dung */
-        .card:has(#pivotHead) {
-            overflow-x: auto;
-        }
-
-        #pivotHead,
-        #pivotBody {
+        thead,
+        tbody tr {
             display: table;
             width: 100%;
-            table-layout: auto; /* Tự động theo dữ liệu */
+            table-layout: fixed;
         }
-</style>
+
+        th {
+            background: #2a5298;
+            color: white;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .card canvas {
+            width: 100% !important;
+            height: 260px !important;
+            max-height: 320px;
+        }
+
+        /* Ensure charts respond to container resizing consistently */
+        #chartMonth {
+            height: 260px !important;
+            max-height: 320px;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
 </head>
+
 <body>
+
     <div class="container">
+
         <h2>⛽ BẢNG TỔNG HỢP THEO DÕI LÃNH DẦU DIEZEN QLK</h2>
 
-        <div class="tab">
-            <button class="tablinks" onclick="openTab(event, 'DangKy')">ĐĂNG KÝ DẦU</button>
-            <button class="tablinks" onclick="openTab(event, 'TongHop')">TỔNG HỢP</button>
-            <button class="tablinks" onclick="openTab(event, 'DuyetXe')">DUYỆT XE</button>
-        </div>
+        <div class="dashboard">
 
-        <!-- TAB ĐĂNG KÝ -->
-        <div id="DangKy" class="tabcontent">
-            <div class="card">
-                <h3>Đăng ký lấy dầu</h3>
-                <form id="fuelForm">
-                    <label id="FuelDateLabel">Ngày cần lấy dầu <span id="FuelDateShow"></span></label>
-                    <input id="fuelDate" type="date" required>
-                    <input id="driverName" placeholder="Số thẻ lái xe đăng ký dầu" required>
-                    <input id="plateNumber" list="plateNumbers" placeholder="Biển số xe" required>
-                    <datalist id="plateNumbers"></datalist>
-                    <input id="fuelAmount" type="number" placeholder="Số lít dầu đăng ký" required>
-                    <label id="kDateLabel">Ngày khai km <span id="kDateShow"></span></label>
-                    <input id="kDate" type="date" required>
-                    <label id="prevKmLabel">Số Km cuối ngày <span id="prevKmDate"></span></label>
-                    <input id="prevKm" type="number" placeholder="Nhập Km cuối ngày" required>
-                    <button type="submit">Đăng ký</button>
-                </form>
+            <div class="stat">
+                <h3 id="totalFuel">0</h3>
+                <p>TỔNG SỐ LÍT XIN LÃNH</p>
             </div>
 
-            <div class="card">
-                <h3>Bộ lọc dữ liệu</h3>
-                <label>Ngày bắt đầu</label>
-                <input type="date" id="startDate">
-                <label>Ngày kết thúc</label>
-                <input type="date" id="endDate">
-                <input id="filterCar" list="filterPlateNumbers" placeholder="Tất cả xe">
-                <datalist id="filterPlateNumbers">
-                    <option value="">
-                    <option value="88LD-00031"><option value="88LD-0093"><option value="88LD-01303">
-                    <option value="88LD-0354"><option value="XN02"><option value="XN03">
-                    <option value="XN04"><option value="XN05"><option value="XN06">
-                    <option value="88B-10262"><option value="88A-84182"><option value="88A-83790">
-                    <option value="88A-75215"><option value="88B-10174"><option value="88A-84130">
-                    <option value="88B-10048"><option value="88B-10047"><option value="88A-84590">
+            <div class="stat">
+                <h3 id="totalTrips">0</h3>
+                <p>TỔNG SỐ LẦN ĐĂNG KÝ</p>
+            </div>
+
+            <div class="stat">
+                <h3 id="totalKm">0</h3>
+                <p>TỔNG SỐ KM ĐÃ ĐI</p>
+            </div>
+
+            <div class="stat">
+                <h3 id="avgFuel">0</h3>
+                <p>TRUNG BÌNH LÍT/LẦN</p>
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Đăng ký lấy dầu</h3>
+
+            <form id="fuelForm">
+
+                <input id="plateNumber" list="plateNumbers" placeholder="Biển số xe" required>
+                <datalist id="plateNumbers">
+                    <option value="88LD-00031">
+                    <option value="88LD-0093">
+                    <option value="88LD-01303">
+                    <option value="88LD-0354">
+                    <option value="XN02">
+                    <option value="XN03">
+                    <option value="XN04">
+                    <option value="XN05">
+                    <option value="XN06">
+                    <option value="88B-10262">
+                    <option value="88A-84182">
+                    <option value="88A-83790">
+                    <option value="88A-75215">
+                    <option value="88B-10174">
+                    <option value="88A-84130">
+                    <option value="88B-10048">
+                    <option value="88B-10047">
+                    <option value="88A-84590">
                 </datalist>
-                <button onclick="applyFilter()">Lọc</button>
-                <button onclick="filterToday()">Hôm nay</button>
-                <button onclick="clearFilter()">Bỏ lọc</button>
-                <button onclick="exportExcel()">Xuất Excel</button>
-                <button onclick="exportPivot()">Xuất Pivot</button>
-            </div>
 
-            <div class="card">
-                <h3>Bảng chi tiết nhu cầu lãnh dầu</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>STT</th><th>Ngày</th><th>Xe</th><th>Lái xe</th>
-                            <th>Lít</th><th>Km cuối ngày</th><th>Ngày khai km</th><th>Thời gian tạo</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recordsTable"></tbody>
-                </table>
-            </div>
-        </div>
+                <input id="driverName" placeholder="Số thẻ lái xe đăng ký dầu" required>
+                <input id="fuelAmount" type="number" placeholder="Số lít dầu đăng ký" required>
+                <label id="FuelDateLabel">Ngày cần lấy dầu <span id="FuelDateShow"></span></label>
+                <input id="fuelDate" type="date" required>
 
-        <!-- TAB TỔNG HỢP -->
-        <div id="TongHop" class="tabcontent">
-            <div class="dashboard">
-                <div class="stat"><h3 id="totalFuel">0</h3><p>TỔNG SỐ LÍT XIN LÃNH</p></div>
-                <div class="stat"><h3 id="totalTrips">0</h3><p>TỔNG SỐ LẦN ĐĂNG KÝ</p></div>
-                <div class="stat"><h3 id="totalKm">0</h3><p>TỔNG SỐ KM ĐÃ ĐI</p></div>
-                <div class="stat"><h3 id="avgFuel">0</h3><p>TRUNG BÌNH LÍT/LẦN</p></div>
-            </div>
+                <label id="prevKmLabel">Số Km cuối ngày <span id="prevKmDate"></span></label>
+                <input id="prevKm" type="number" placeholder="Nhập Km cuối ngày" required>
 
-            <div class="card">
-                <h3>Bộ lọc dữ liệu</h3>
-                <label>Ngày bắt đầu</label>
-                <input type="date" id="startDateTongHop">
-                <label>Ngày kết thúc</label>
-                <input type="date" id="endDateTongHop">
-                <input id="filterCarTongHop" list="filterPlateNumbersTongHop" placeholder="Tất cả xe">
-                <datalist id="filterPlateNumbersTongHop">
-                    <option value="">
-                    <option value="88LD-00031"><option value="88LD-0093"><option value="88LD-01303">
-                    <option value="88LD-0354"><option value="XN02"><option value="XN03">
-                    <option value="XN04"><option value="XN05"><option value="XN06">
-                    <option value="88B-10262"><option value="88A-84182"><option value="88A-83790">
-                    <option value="88A-75215"><option value="88B-10174"><option value="88A-84130">
-                    <option value="88B-10048"><option value="88B-10047"><option value="88A-84590">
-                </datalist>
-                <button onclick="load()">Làm mới</button>
-                <button onclick="applyFilterTongHop()">Lọc</button>
-                <button onclick="filterTodayTongHop()">Hôm nay</button>
-                <button onclick="clearFilterTongHop()">Bỏ lọc</button>
-                <button onclick="exportExcel()">Xuất Excel</button>
-                <button onclick="exportPivot()">Xuất Pivot</button>
-            </div>
+                <button>Đăng ký</button>
 
-            <div class="card">
-                <h3>BIỂU ĐỒ NHU CẦU LÃNH DẦU THEO NGÀY ( Lít )</h3>
-                <canvas id="chartDay"></canvas>
-            </div>
-            <div class="card">
-                <h3>TOP XE TIÊU THỤ THEO THÁNG ( Lít )</h3>
-                <canvas id="chartCar"></canvas>
-            </div>
-            <div class="card">
-                <h3>XU HƯỚNG LÃNH THEO THÁNG ( Lít )</h3>
-                <canvas id="chartMonth"></canvas>
-            </div>
-            <div class="card">
-                <label>Năm</label>
-                <select id="pivotYear" onchange="buildPivot(); buildMonthChart(allRecords);"></select>
-                <h3>TỔNG HỢP SỐ LƯỢNG LÃNH THEO THÁNG ( Lít )</h3>
-                <table>
-                    <thead id="pivotHead"></thead>
-                    <tbody id="pivotBody"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- TAB DUYỆT XE -->
-        <div id="DuyetXe" class="tabcontent">
-            <div class="card">
-                            <div class="card">
-                <h3>Duyệt xe</h3>
-                <label>Mã phiếu duyệt</label>
-                <input id="maPhieu" placeholder="Nhập mã phiếu duyệt">
-                <label>Tên người duyệt</label>
-                <select id="duyetName">
-                    <option value="">-- Chọn người duyệt --</option>
-                </select>
-                <datalist id="duyetNameList"></datalist>
-                <button onclick="duyetXe()">Duyệt xe</button>
-            </div>
-                <h3>Danh sách đăng ký chưa duyệt</h3>
-                <div class="duyet-info" id="duyetInfo" style="display:none;">
-                    Đã chọn: <strong id="selectedCar"></strong> - Ngày: <strong id="selectedDate"></strong>
-                </div>
-                <button onclick="renderUnapprovedRecords()">Tải lại danh sách</button>
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width:40px">Chọn</th>
-                            <th>STT</th><th>Ngày</th><th>Xe</th><th>Lái xe</th>
-                            <th>Lít</th><th>Thời gian tạo</th>
-                        </tr>
-                    </thead>
-                    <tbody id="unapprovedTable"></tbody>
-                </table>
-                <p id="unapprovedCount" style="text-align:center; color:#666; margin-top:10px;"></p>
-            </div>
-
+            </form>
 
         </div>
+
+        <div class="card">
+
+            <h3>Bộ lọc dữ liệu</h3>
+
+            <label>Ngày bắt đầu</label>
+            <input type="date" id="startDate">
+
+            <label>Ngày kết thúc</label>
+            <input type="date" id="endDate">
+
+            <input id="filterCar" list="filterPlateNumbers" placeholder="Tất cả xe">
+            <datalist id="filterPlateNumbers">
+                <option value="">
+                <option value="88LD-00031">
+                <option value="88LD-0093">
+                <option value="88LD-01303">
+                <option value="88LD-0354">
+                <option value="XN02">
+                <option value="XN03">
+                <option value="XN04">
+                <option value="XN05">
+                <option value="XN06">
+                <option value="88B-10262">
+                <option value="88A-84182">
+                <option value="88A-83790">
+                <option value="88A-75215">
+                <option value="88B-10174">
+                <option value="88A-84130">
+                <option value="88B-10048">
+                <option value="88B-10047">
+                <option value="88A-84590">
+            </datalist>
+
+            <button onclick="applyFilter()">Lọc</button>
+            <button onclick="filterToday()">Hôm nay</button>
+            <button onclick="clearFilter()">Bỏ lọc</button>
+            <button onclick="exportExcel()">Xuất Excel</button>
+            <button onclick="exportPivot()">Xuất Pivot</button>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Bảng chi tiết nhu cầu lãnh dầu</h3>
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Ngày</th>
+                        <th>Xe</th>
+                        <th>Lái xe</th>
+                        <th>Lít</th>
+                        <th>Km cuối ngày</th>
+                        <th>Thời gian tạo</th>
+                    </tr>
+                </thead>
+
+                <tbody id="recordsTable"></tbody>
+
+            </table>
+
+        </div>
+
+        <div class="card">
+            <h3>BIỂU ĐỒ NHU CẦU LÃNH DẦU THEO NGÀY ( Lít )</h3>
+            <canvas id="chartDay"></canvas>
+        </div>
+
+        <div class="card">
+            <h3>TOP XE TIÊU THỤ THEO THÁNG ( Lít )</h3>
+            <canvas id="chartCar"></canvas>
+        </div>
+
+        <div class="card">
+            <h3>XU HƯỚNG LÃNH THEO THÁNG ( Lít )</h3>
+            <canvas id="chartMonth"></canvas>
+        </div>
+
+        <div class="card">
+            <label>Năm</label>
+            <select id="pivotYear" onchange="buildPivot(); buildMonthChart(allRecords);"></select>
+
+            <h3>TỔNG HỢP SỐ LƯỢNG LÃNH THEO THÁNG ( Lít )</h3>
+
+            <table>
+                <thead id="pivotHead"></thead>
+                <tbody id="pivotBody"></tbody>
+            </table>
+        </div>
+
     </div>
 
     <script>
-        const CONFIG = {
-            API: "https://script.google.com/macros/s/AKfycbydqANCCr4vjBpesZkbUAjngDa-TypkTeM8k6K7KzioahhEqYgNxgWG5qOyrUkD9gz0/exec"
-        };
-        
-        let pivotCache = {};
-        let allRecords = [];
-        let filteredRecords = [];
-        let chartDay, chartCar, chartMonth;
-        let carMap = {};
-        let cars = [];
-        let duyetNames = [];
-        let currentTab = 'DangKy';
-        let selectedRecord = null;
-        let isDataLoaded = false;
 
-        // DOM elements
+        const CONFIG = {
+            API: "https://script.google.com/macros/s/AKfycbws3C_yR1yb4Q1l2MTR3K_Fv1j_0PBht8eRSZnuP7cJOndQY3QSzEhnB3-UsWBei1Ic/exec"
+        };
+        let pivotCache = {};
+        const totalFuelEl = document.getElementById("totalFuel");
+        const totalTripsEl = document.getElementById("totalTrips");
+        const avgFuelEl = document.getElementById("avgFuel");
+        const totalKmEl = document.getElementById("totalKm");
+
+        function formatDateLocal(date) {
+
+            let y = date.getFullYear();
+            let m = String(date.getMonth() + 1).padStart(2, '0');
+            let d = String(date.getDate()).padStart(2, '0');
+
+            return y + "-" + m + "-" + d;
+
+        }
+
+        // Explicit DOM references (avoid relying on global element variables)
         const fuelForm = document.getElementById("fuelForm");
         const plateNumber = document.getElementById("plateNumber");
         const driverName = document.getElementById("driverName");
         const fuelAmount = document.getElementById("fuelAmount");
         const fuelDate = document.getElementById("fuelDate");
-        const kDate = document.getElementById("kDate");
         const prevKm = document.getElementById("prevKm");
         const prevKmDate = document.getElementById("prevKmDate");
         const prevKmLabel = document.getElementById("prevKmLabel");
         const startDate = document.getElementById("startDate");
         const endDate = document.getElementById("endDate");
         const filterCar = document.getElementById("filterCar");
-        const recordsTable = document.getElementById("recordsTable");
 
-        // Khởi tạo ngày mặc định
+        let allRecords = [];
+        let filteredRecords = [];
+        let chartDay;
+        let chartCar;
+        let chartMonth;
         fuelDate.valueAsDate = new Date();
-        const d = new Date();
-        d.setDate(d.getDate() - 1);
-        kDate.value = formatDateLocal(d);
+
+        function updatePrevKmDate() {
+            const dateValue = fuelDate.value || formatDateLocal(new Date());
+            const d = new Date(dateValue);
+            d.setDate(d.getDate() - 1);
+            const prevDate = formatDateLocal(d);
+
+            prevKmDate.innerText = prevDate;
+            prevKm.placeholder = "Km cuối ngày " + prevDate;
+
+            updatePrevKmRequirement();
+        }
+
+        function updatePrevKmRequirement() {
+            const isXn = plateNumber.value.startsWith("XN");
+
+            if (isXn) {
+                prevKm.required = false;
+                prevKmLabel.innerHTML = `Số Km cuối ngày <span id="prevKmDate"></span> (không bắt buộc)`;
+            } else {
+                prevKm.required = true;
+                prevKmLabel.innerHTML = `Số Km cuối ngày <span id="prevKmDate"></span>`;
+            }
+
+            // Keep the date text synced after changing innerHTML
+            const dateValue = fuelDate.value || formatDateLocal(new Date());
+            const d = new Date(dateValue);
+            d.setDate(d.getDate() - 1);
+            prevKmDate.innerText = formatDateLocal(d);
+        }
+
+        fuelDate.addEventListener("change", updatePrevKmDate);
+        plateNumber.addEventListener("change", updatePrevKmRequirement);
+        updatePrevKmDate();
 
         const now = new Date();
         const firstDay = formatDateLocal(new Date(now.getFullYear(), now.getMonth(), 1));
@@ -381,174 +402,73 @@
 
         startDate.value = firstDay;
         endDate.value = lastDay;
-        document.getElementById("startDateTongHop").value = firstDay;
-        document.getElementById("endDateTongHop").value = lastDay;
 
-        function formatDateLocal(date) {
-            let y = date.getFullYear();
-            let m = String(date.getMonth() + 1).padStart(2, '0');
-            let d = String(date.getDate()).padStart(2, '0');
-            return y + "-" + m + "-" + d;
-        }
-
-        function updatePrevKmDate() {
-            const dateValue = fuelDate.value || formatDateLocal(new Date());
-            const d = new Date(dateValue);
-            d.setDate(d.getDate() - 1);
-            kDate.value = formatDateLocal(d);
-            prevKm.placeholder = "Km cuối";
-            prevKmLabel.innerHTML = "Số Km cuối";
-            updatePrevKmRequirement();
-        }
-
-        function updatePrevKmRequirement() {
-            const isXn = plateNumber.value.startsWith("XN");
-            if (isXn) {
-                prevKm.required = false;
-                prevKmLabel.innerHTML = `Số Km cuối (không bắt buộc)`;
-            } else {
-                prevKm.required = true;
-                prevKmLabel.innerHTML = `Số Km cuối`;
-            }
-        }
-
-        fuelDate.addEventListener("change", updatePrevKmDate);
-        plateNumber.addEventListener("change", updatePrevKmRequirement);
-        updatePrevKmDate();
-
-        // ===== JSONP Handler =====
         function jsonp(url, callback) {
+
             const script = document.createElement("script");
-            const cbName = callback + "_" + Date.now();
-            
-            window[cbName] = function (data) {
-                delete window[cbName];
+
+            window[callback] = function (data) {
+
+                delete window[callback];
                 script.remove();
+
                 handle(callback, data);
+
             };
 
-            // Thêm timestamp để tránh cache
-            const sep = url.includes("?") ? "&" : "?";
-            script.src = url + sep + "callback=" + cbName + "&_t=" + Date.now();
+            script.src = url + "&callback=" + callback;
+
             document.body.appendChild(script);
+
         }
 
         function handle(cb, data) {
-            console.log("Callback:", cb, "Data:", data);
 
             if (cb === "load") {
-                if (!Array.isArray(data)) {
-                    console.error("Dữ liệu không hợp lệ:", data);
-                    alert("Lỗi tải dữ liệu: " + JSON.stringify(data));
-                    return;
-                }
 
                 allRecords = data.map(r => {
+
                     let d = new Date(r.date);
+
                     let day = d.toISOString().slice(0, 10);
 
-                    let formattedKDate = "";
-                    if (r.kDate) {
-                        const kd = new Date(r.kDate);
-                        formattedKDate = isNaN(kd.getTime()) ? r.kDate : formatDateLocal(kd);
-                    }
-
                     return {
-                        stt: Number(r.stt) || 0,
-                        id: String(r.id || ""), // Đảm bảo là string
-                        plateNumber: r.plateNumber || "",
-                        driverName: r.driverName || "",
+                        stt: Number(r.stt),
+                        plateNumber: r.plateNumber,
+                        driverName: r.driverName,
                         fuelAmount: Number(r.fuelAmount) || 0,
-                        date: day,
-                        createdAt: r.createdAt || "",
+                        date: day, // chuẩn hóa luôn
+                        createdAt: r.createdAt,
                         endKm: Number(r.endKm) || 0,
                         prevKm: Number(r.prevKm) || 0,
-                        kDate: formattedKDate,
-                        duyet: r.duyet || "",
+
+                        // cache sẵn
                         year: d.getFullYear(),
                         month: String(d.getMonth() + 1).padStart(2, '0'),
                         day: day
                     };
+
                 });
-                
-                isDataLoaded = true;
                 buildPivotCache();
+
                 initPivotYear();
+
                 applyFilter();
-                
-                // Nếu đang ở tab DuyetXe thì render ngay
-                if (currentTab === 'DuyetXe') {
-                    renderUnapprovedRecords();
-                }
-            }
 
-            if (cb === "loadCars") {
-                populateCarDatalist(data || []);
-                cars = data || [];
-            }
-
-            if (cb === "loadDuyetNames") {
-                duyetNames = data || [];
-                // Cập nhật datalist
-                const select = document.getElementById("duyetName");
-
-                select.innerHTML = '<option value="">-- Chọn người duyệt --</option>';
-
-                duyetNames.forEach(name => {
-                    select.innerHTML += `<option value="${name}">${name}</option>`;
-                });
             }
 
             if (cb === "add") {
-                alert(data.message || data);
-                if (data.status === "success") {
-                    driverName.value = "";
-                    fuelAmount.value = "";
-                    prevKm.value = "";
-                    load();
-                }
+
+                alert(data.message);
+
+                driverName.value = "";
+                fuelAmount.value = "";
+
+                load();
+
             }
 
-            if (cb === "duyetXeCallback") {
-                console.log("Duyệt response:", data);
-                
-                if (data && data.status === "success") {
-                    alert("✅ " + data.message);
-                    document.getElementById("duyetName").value = "";
-                    document.getElementById("maPhieu").value = "";
-                    selectedRecord = null;
-                    document.getElementById("duyetInfo").style.display = "none";
-                    load(); // Reload lại danh sách
-                } else {
-                    alert("❌ Lỗi: " + (data?.message || "Không xác định"));
-                }
-            }
         }
-
-        function populateCarDatalist(cars) {
-            const dataList1 = document.getElementById("plateNumbers");
-            const dataList2 = document.getElementById("filterPlateNumbersTongHop");
-            dataList1.innerHTML = '<option value="">';
-            dataList2.innerHTML = '<option value="">';
-            carMap = {};
-
-            cars.forEach(item => {
-                if (item.plateNumber) {
-                    const opt1 = document.createElement("option");
-                    opt1.value = item.plateNumber;
-                    dataList1.appendChild(opt1);
-
-                    const opt2 = document.createElement("option");
-                    opt2.value = item.plateNumber;
-                    dataList2.appendChild(opt2);
-
-                    if (item.dinhMuc) {
-                        carMap[item.plateNumber] = item.dinhMuc;
-                    }
-                }
-            });
-        }
-
         function buildPivotCache() {
 
             pivotCache = {};
@@ -572,77 +492,45 @@
         }
 
         function load() {
-            isDataLoaded = false;
             jsonp(CONFIG.API + "?action=getRecords", "load");
         }
 
-        function loadCarList() {
-            jsonp(CONFIG.API + "?action=getCars", "loadCars");
-        }
-
-        function loadDuyetNames() {
-            jsonp(CONFIG.API + "?action=getDuyetNames", "loadDuyetNames");
-        }
-
-        // ===== FILTER FUNCTIONS =====
         function filterToday() {
+
             let today = formatDateLocal(new Date());
+
             startDate.value = today;
             endDate.value = lastDay;
+
             applyFilter();
+
         }
 
         function clearFilter() {
+
             startDate.value = firstDay;
             endDate.value = lastDay;
             filterCar.value = "";
+
             applyFilter();
-        }
 
-        function filterTodayTongHop() {
-            let today = formatDateLocal(new Date());
-            document.getElementById("startDateTongHop").value = today;
-            document.getElementById("endDateTongHop").value = lastDay;
-            applyFilterTongHop();
-        }
-
-        function clearFilterTongHop() {
-            document.getElementById("startDateTongHop").value = firstDay;
-            document.getElementById("endDateTongHop").value = lastDay;
-            document.getElementById("filterCarTongHop").value = "";
-            applyFilterTongHop();
-        }
-
-        function applyFilterTongHop() {
-            const start = document.getElementById("startDateTongHop").value;
-            const end = document.getElementById("endDateTongHop").value;
-            const car = document.getElementById("filterCarTongHop").value;
-
-            filteredRecords = allRecords.filter(r => {
-                let okDate = (!start || r.date >= start) && (!end || r.date <= end);
-                let okCar = (car == "" || r.plateNumber === car);
-                return okDate && okCar;
-            }).sort((a, b) => {
-                if (a.date > b.date) return 1;
-                if (a.date < b.date) return -1;
-                return a.stt - b.stt;
-            });
-
-            buildCharts(filteredRecords);
-            buildMonthChart(allRecords);
-            buildPivot();
-            updateStats(filteredRecords);
         }
 
         function applyFilter() {
+
             const start = startDate.value;
             const end = endDate.value;
             const car = filterCar.value;
 
             filteredRecords = allRecords.filter(r => {
-                let okDate = (!start || r.date >= start) && (!end || r.date <= end);
+
+                let d = r.date;
+
+                let okDate = (!start || d >= start) && (!end || d <= end);
                 let okCar = (car == "" || r.plateNumber === car);
+
                 return okDate && okCar;
+
             }).sort((a, b) => {
                 if (a.date > b.date) return 1;
                 if (a.date < b.date) return -1;
@@ -650,166 +538,60 @@
             });
 
             render(filteredRecords);
+            buildCharts(filteredRecords);
+            buildMonthChart(allRecords);
+            buildPivot();
             updateStats(filteredRecords);
+
         }
 
-        // ===== RENDER FUNCTIONS =====
         function render(data) {
-            const LIMIT = 300;
+
+            const LIMIT = 300; // chỉ render 300 dòng
             let html = "";
+
             let len = Math.min(data.length, LIMIT);
 
             for (let i = 0; i < len; i++) {
                 let r = data[i];
-                html += `<tr>
-                    <td>${r.stt}</td>
-                    <td>${r.day}</td>
-                    <td>${r.plateNumber}</td>
-                    <td>${r.driverName}</td>
-                    <td>${formatNumber(r.fuelAmount)}</td>
-                    <td>${formatNumber(r.endKm)}</td>
-                    <td>${r.kDate || ''}</td>
-                    <td>${formatDateTime(r.createdAt)}</td>
-                </tr>`;
+
+                html += `
+        <tr>
+        <td>${r.stt}</td>
+        <td>${r.day}</td>
+        <td>${r.plateNumber}</td>
+        <td>${r.driverName}</td>
+        <td>${formatNumber(r.fuelAmount)}</td>
+        <td>${formatNumber(r.endKm)}</td>
+        <td>${formatDateTime(r.createdAt)}</td>
+        </tr>`;
             }
+
             recordsTable.innerHTML = html;
         }
 
-        // ===== DUYỆT XE - FIXED =====
-        function renderUnapprovedRecords() {
-            console.log("Render unapproved. Total records:", allRecords.length);
-            console.log("Sample duyet values:", allRecords.slice(0, 3).map(r => ({id: r.id, duyet: r.duyet, plate: r.plateNumber})));
-            
-            if (!isDataLoaded) {
-                document.getElementById("unapprovedTable").innerHTML = 
-                    '<tr><td colspan="9" style="color:#999">Đang tải dữ liệu...</td></tr>';
-                load(); // Tải lại nếu chưa có data
-                return;
-            }
-
-            // Lọc: duyet là rỗng hoặc undefined/null
-            const unapproved = allRecords.filter(r => {
-                return !r.duyet || r.duyet === "" || r.duyet === null || r.duyet === undefined;
-            });
-            
-            console.log("Unapproved count:", unapproved.length);
-            renderUnapprovedTable(unapproved);
-        }
-
-        function renderUnapprovedTable(data) {
-            const table = document.getElementById("unapprovedTable");
-            const countEl = document.getElementById("unapprovedCount");
-            
-            if (!data || data.length === 0) {
-                table.innerHTML = '<tr><td colspan="9" style="color:#999; padding:20px;">Không có xe nào cần duyệt</td></tr>';
-                countEl.textContent = "Tổng: 0 xe chưa duyệt";
-                return;
-            }
-
-            let html = "";
-            data.forEach(r => {
-                // Đảm bảo id là string để so sánh
-                const idStr = String(r.id);
-                
-                html += `<tr onclick="selectRow(${r.stt}, '${idStr}', '${r.plateNumber}', '${r.day}')" 
-                        style="cursor:pointer" id="row_${r.stt}">
-                    <td>
-                        <input type="radio" name="selectRow" value="${r.stt}" 
-                            onclick="selectRow(${r.stt}, '${idStr}', '${r.plateNumber}', '${r.day}'); event.stopPropagation();">
-                    </td>
-                    <td>${r.stt}</td>
-                    <td>${r.day}</td>
-                    <td>${r.plateNumber}</td>
-                    <td>${r.driverName}</td>
-                    <td>${formatNumber(r.fuelAmount)}</td>
-                    
-                    <td>${formatDateTime(r.createdAt)}</td>
-                </tr>`;
-            });
-
-            table.innerHTML = html;
-            countEl.textContent = `Tổng: ${data.length} xe chưa duyệt`;
-        }
-
-        function selectRow(stt, id, plateNumber, date) {
-            selectedRecord = { stt, id: String(id), plateNumber, date };
-            
-            // Hiển thị thông tin đã chọn
-            document.getElementById("duyetInfo").style.display = "block";
-            document.getElementById("selectedCar").textContent = plateNumber;
-            document.getElementById("selectedDate").textContent = date;
-
-            // Highlight row
-            document.querySelectorAll('#unapprovedTable tr').forEach(row => {
-                row.classList.remove("selected-row");
-            });
-            
-            const selectedRow = document.getElementById("row_" + stt);
-            if (selectedRow) selectedRow.classList.add("selected-row");
-
-            // Check radio
-            document.querySelectorAll('input[name="selectRow"]').forEach(r => {
-                r.checked = Number(r.value) === stt;
-            });
-        }
-
-        function duyetXe() {
-            const duyetName = document.getElementById("duyetName").value.trim();
-            const maPhieu = document.getElementById("maPhieu").value.trim();
-
-            if (!selectedRecord) {
-                alert("Vui lòng chọn xe cần duyệt.");
-                return;
-            }
-
-            if (!maPhieu) {
-                alert("Vui lòng nhập mã phiếu duyệt.");
-                return;
-            }
-
-            if (!duyetName) {
-                alert("Vui lòng nhập tên người duyệt.");
-                return;
-            }
-
-            if (!duyetNames.includes(duyetName)) {
-                alert("Tên người duyệt không hợp lệ. Vui lòng chọn tên trong danh sách.");
-                return;
-            }
-
-            const payload = {
-                stt: selectedRecord.stt,
-                id: selectedRecord.id,
-                plateNumber: selectedRecord.plateNumber,
-                date: selectedRecord.date,
-                duyetName: duyetName,
-                maPhieu: maPhieu
-            };
-
-            console.log("Gửi duyệt:", payload);
-
-            jsonp(
-                CONFIG.API + "?action=duyetXe" + "&data=" + encodeURIComponent(JSON.stringify(payload)),
-                "duyetXeCallback"
-            );
-        }
-
-        // ===== STATS & CHARTS =====
         function updateStats(data) {
+
             let totalFuel = 0;
             let totalTrips = data.length;
             let carTotal = {};
 
             data.forEach(r => {
+
                 totalFuel += Number(r.fuelAmount) || 0;
+
                 if (!carTotal[r.plateNumber]) carTotal[r.plateNumber] = 0;
+
                 carTotal[r.plateNumber] += Number(r.fuelAmount) || 0;
+
             });
 
             let totalKm = 0;
+
             let dataToUse = data.length > 0 ? data : allRecords;
 
             if (dataToUse.length > 0) {
+                // Nhóm theo xe
                 let carData = {};
                 dataToUse.forEach(r => {
                     if (!carData[r.plateNumber]) carData[r.plateNumber] = [];
@@ -818,6 +600,7 @@
 
                 for (let car in carData) {
                     let records = carData[car];
+                    // Nhóm theo ngày cho xe này
                     let dayKm = {};
                     records.forEach(r => {
                         if (!dayKm[r.date]) dayKm[r.date] = [];
@@ -828,8 +611,13 @@
                     if (dates.length > 0) {
                         let minDate = dates[0];
                         let maxDate = dates[dates.length - 1];
+
+                        // Lấy km cuối ngày của ngày nhỏ nhất
                         let minKm = dayKm[minDate].sort((a, b) => b.stt - a.stt)[0].km;
+
+                        // Lấy km cuối ngày của ngày lớn nhất
                         let maxKm = dayKm[maxDate].sort((a, b) => b.stt - a.stt)[0].km;
+
                         totalKm += maxKm - minKm;
                     }
                 }
@@ -837,26 +625,34 @@
 
             let avgFuel = totalTrips ? totalFuel / totalTrips : 0;
 
-            document.getElementById("totalFuel").innerText = formatNumber(totalFuel);
-            document.getElementById("totalTrips").innerText = totalTrips;
-            document.getElementById("avgFuel").innerText = formatNumber(avgFuel);
-            document.getElementById("totalKm").innerText = formatNumber(totalKm);
+            totalFuelEl.innerText = formatNumber(totalFuel);
+            totalTripsEl.innerText = totalTrips;
+            avgFuelEl.innerText = formatNumber(avgFuel);
+            totalKmEl.innerText = formatNumber(totalKm);
+
         }
 
         function buildCharts(data) {
+
             let day = {};
             let car = {};
 
             data.forEach(r => {
-                day[r.day] = (day[r.day] || 0) + Number(r.fuelAmount || 0);
+
+                let d = r.day;
+
+                day[d] = (day[d] || 0) + Number(r.fuelAmount || 0);
                 car[r.plateNumber] = (car[r.plateNumber] || 0) + Number(r.fuelAmount || 0);
+
             });
 
             if (chartDay) chartDay.destroy();
             if (chartCar) chartCar.destroy();
 
             chartDay = new Chart(document.getElementById("chartDay"), {
+
                 type: "line",
+
                 data: {
                     labels: Object.keys(day),
                     datasets: [{
@@ -865,21 +661,41 @@
                         borderColor: "#2a5298"
                     }]
                 },
+
                 options: {
-                    layout: { padding: { top: 20, right: 20, bottom: 20, left: 20 } },
+                    layout: {
+                        padding: {
+                            top: 20,
+                            right: 20,
+                            bottom: 20,
+                            left: 20
+                        }
+                    },
                     plugins: {
-                        legend: { display: false },
+                        legend: {
+                            display: false
+                        },
                         datalabels: {
-                            color: "red", font: { size: 13, weight: "bold" },
-                            anchor: "end", align: "top", formatter: (v) => formatNumber(v)
+                            color: "red",
+                            font: {
+                                size: 13,
+                                weight: "bold"
+                            },
+                            anchor: "end",
+                            align: "top",
+                            formatter: (v) => formatNumber(v)
                         }
                     }
                 },
+
                 plugins: [ChartDataLabels]
+
             });
 
             chartCar = new Chart(document.getElementById("chartCar"), {
+
                 type: "bar",
+
                 data: {
                     labels: Object.keys(car),
                     datasets: [{
@@ -888,48 +704,67 @@
                         backgroundColor: "#2a5298"
                     }]
                 },
+
                 options: {
                     plugins: {
-                        legend: { display: false },
+                        legend: {
+                            display: false
+                        },
                         datalabels: {
-                            color: "red", font: { weight: "bold", size: 13 },
-                            anchor: "end", align: "top", formatter: (v) => formatNumber(v)
+                            color: "red",
+                            font: {
+                                weight: "bold",
+                                size: 13
+                            },
+                            anchor: "end",
+                            align: "top",
+                            formatter: (v) => formatNumber(v)
                         }
                     }
                 },
+
                 plugins: [ChartDataLabels]
+
             });
+
         }
 
         function buildMonthChart(data) {
-            // Lấy đúng filter tùy theo tab đang mở
-            let car = (currentTab === 'TongHop') 
-                ? document.getElementById("filterCarTongHop").value 
-                : filterCar.value;
 
-            let currentYear = Number(pivotYear.value);
+            let car = filterCar.value;
+            let currentYear = Number(pivotYear.value); // dùng năm của pivot
 
             let monthData = {};
+
             for (let i = 1; i <= 12; i++) {
                 monthData[String(i).padStart(2, '0')] = 0;
-            }
+            };
 
             data.forEach(r => {
-                // Dùng cache thay vì new Date để tránh lỗi timezone
-                let year = r.year;
-                let month = r.month;
+
+                let d = new Date(r.date);
+
+                let year = d.getFullYear();
+                let month = String(d.getMonth() + 1).padStart(2, '0');
 
                 if (year === currentYear) {
+
                     if (car === "" || r.plateNumber === car) {
+
                         monthData[month] += Number(r.fuelAmount) || 0;
+
                     }
+
                 }
+
             });
 
             if (chartMonth) chartMonth.destroy();
 
             chartMonth = new Chart(document.getElementById("chartMonth"), {
+
                 type: "line",
+
                 data: {
                     labels: Object.keys(monthData),
                     datasets: [{
@@ -940,9 +775,16 @@
                         fill: true
                     }]
                 },
+
                 options: {
                     plugins: {
-                        legend: { display: false },
+
+                        legend: {
+                            display: false/*
+                            position: "top",
+                            align: "start"*/
+                        },
+
                         datalabels: {
                             color: "red",
                             font: { size: 15, weight: "bold" },
@@ -950,31 +792,35 @@
                             align: "top",
                             formatter: (v) => formatNumber(v)
                         }
+
                     }
                 },
+
                 plugins: [ChartDataLabels]
+
             });
+
         }
 
         function formatDateTime(date) {
-            if (!date) return "";
+
             let d = new Date(date);
-            if (isNaN(d.getTime())) return date;
-            
+
             let y = d.getFullYear();
             let m = String(d.getMonth() + 1).padStart(2, '0');
             let day = String(d.getDate()).padStart(2, '0');
+
             let h = String(d.getHours()).padStart(2, '0');
             let min = String(d.getMinutes()).padStart(2, '0');
+
             return y + "-" + m + "-" + day + " " + h + ":" + min;
+
         }
 
         function buildPivot() {
+
             let year = Number(pivotYear.value);
-            // Lấy đúng filter tùy theo tab đang mở
-            let carFilter = (currentTab === 'TongHop') 
-                ? document.getElementById("filterCarTongHop").value 
-                : filterCar.value;
+            let carFilter = filterCar.value;
 
             let months = [
                 "01", "02", "03", "04", "05", "06",
@@ -1014,19 +860,15 @@
             cars = [...cars].sort();
 
             // ===== HEADER =====
-            // Đảm bảo bảng có layout fixed
-            document.querySelector('#pivotHead').style.tableLayout = 'fixed';
-            document.querySelector('#pivotBody').style.tableLayout = 'fixed';
-
             pivotHead.innerHTML =
-                "<tr><th style='width:120px; min-width:120px; max-width:200px; white-space:nowrap;'>Xe</th>" +
+                "<tr><th>Xe</th>" +
                 months.map(m => `<th>${year}-${m}</th>`).join("") +
                 "<th>Tổng</th></tr>";
 
             let html = "";
 
             // ===== TOTAL =====
-            let totalRow = "<tr style='font-weight:bold;background:#f2f2f2'><td style='width:120px; min-width:120px; max-width:200px; white-space:nowrap; text-align:left; padding-left:10px;'>Total</td>";
+            let totalRow = "<tr style='font-weight:bold;background:#f2f2f2'><td>Total</td>";
 
             let grandTotal = 0;
 
@@ -1050,7 +892,7 @@
                 let car = cars[i];
                 let total = 0;
 
-                let row = `<tr><td style='width:120px; min-width:120px; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:left; padding-left:10px;'>${car}</td>`;
+                let row = `<tr><td>${car}</td>`;
 
                 for (let j = 0; j < months.length; j++) {
 
@@ -1071,183 +913,216 @@
         }
 
         function exportExcel() {
-            let csv = "Date,Car,Driver,Liters,Km,Khai Km,Created Time\n";
+
+            let csv = "Date,Car,Driver,Liters,Km,Created Time\n";
+
             filteredRecords.forEach(r => {
-                csv += `${r.day},${r.plateNumber},${r.driverName},${r.fuelAmount},${r.endKm},${r.kDate || ""},${formatDateTime(r.createdAt)}\n`;
+
+                let d = r.day;
+                let created = formatDateTime(r.createdAt);
+
+                csv += d + "," +
+                    r.plateNumber + "," +
+                    r.driverName + "," +
+                    r.fuelAmount + "," +
+                    r.endKm + "," +
+                    created + "\n";
+
             });
+
             const blob = new Blob([csv]);
             const a = document.createElement("a");
+
             a.href = URL.createObjectURL(blob);
             a.download = "fuel_report.csv";
             a.click();
+
         }
 
         function exportPivot() {
-            let year = Number(document.getElementById("pivotYear").value);
+
+            let year = Number(pivotYear.value);
             let carFilter = filterCar.value;
-            let months = ["01","02","03","04","05","06","07","08","09","10","11","12"];
-            
+
+            let months = [
+                "01", "02", "03", "04", "05", "06",
+                "07", "08", "09", "10", "11", "12"
+            ];
+
             let cars = new Set();
             let map = {};
             let monthTotal = {};
-            months.forEach(m => monthTotal[m] = 0);
 
-            allRecords.forEach(r => {
-                if (r.year !== year) return;
-                if (carFilter && r.plateNumber !== carFilter) return;
+            for (let i = 0; i < months.length; i++) {
+                monthTotal[months[i]] = 0;
+            }
+
+            // ✅ GIỐNG buildPivot → dùng allRecords
+            for (let i = 0; i < allRecords.length; i++) {
+
+                let r = allRecords[i];
+
+                if (r.year !== year) continue;
+                if (carFilter && r.plateNumber !== carFilter) continue;
+
                 let m = r.month;
+
                 cars.add(r.plateNumber);
+
                 if (!map[r.plateNumber]) map[r.plateNumber] = {};
-                map[r.plateNumber][m] = (map[r.plateNumber][m] || 0) + r.fuelAmount;
+
+                map[r.plateNumber][m] =
+                    (map[r.plateNumber][m] || 0) + r.fuelAmount;
+
                 monthTotal[m] += r.fuelAmount;
-            });
+            }
 
             cars = [...cars].sort();
 
+            // ===== CSV =====
             let csv = "Xe," + months.map(m => `${year}-${m}`).join(",") + ",Tong\n";
-            
+
+            // ===== TOTAL ROW =====
             let totalRow = ["Total"];
             let grandTotal = 0;
-            months.forEach(m => {
+
+            for (let i = 0; i < months.length; i++) {
+                let m = months[i];
                 let v = monthTotal[m] || 0;
+
                 totalRow.push(v === 0 ? "" : v);
                 grandTotal += v;
-            });
+            }
+
             totalRow.push(grandTotal === 0 ? "" : grandTotal);
+
             csv += totalRow.join(",") + "\n";
 
-            cars.forEach(car => {
+            // ===== CAR ROWS =====
+            for (let i = 0; i < cars.length; i++) {
+
+                let car = cars[i];
                 let total = 0;
+
                 let row = [car];
-                months.forEach(m => {
+
+                for (let j = 0; j < months.length; j++) {
+
+                    let m = months[j];
                     let v = map[car]?.[m] || 0;
+
                     row.push(v === 0 ? "" : v);
                     total += v;
-                });
-                row.push(total === 0 ? "" : total);
-                csv += row.join(",") + "\n";
-            });
+                }
 
+                row.push(total === 0 ? "" : total);
+
+                csv += row.join(",") + "\n";
+            }
+
+            // download
             const blob = new Blob([csv]);
             const a = document.createElement("a");
+
             a.href = URL.createObjectURL(blob);
             a.download = "fuel_pivot_report.csv";
             a.click();
         }
 
-        function openTab(evt, tabName) {
-            var i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tabcontent");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-            tablinks = document.getElementsByClassName("tablinks");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-            document.getElementById(tabName).style.display = "block";
-            if (evt && evt.currentTarget) {
-                evt.currentTarget.className += " active";
-            }
-            currentTab = tabName;
-            
-            if (tabName === 'TongHop') {
-                const now = new Date();
-                const firstDay = formatDateLocal(new Date(now.getFullYear(), now.getMonth(), 1));
-                const lastDay = formatDateLocal(new Date(now.getFullYear(), now.getMonth() + 1, 0));
-                document.getElementById("startDateTongHop").value = firstDay;
-                document.getElementById("endDateTongHop").value = lastDay;
-                applyFilterTongHop();
-            }
-            if (tabName === 'DuyetXe') {
-                renderUnapprovedRecords();
-            }
-        }
-
-        // ===== FORM SUBMIT =====
         fuelForm.addEventListener("submit", function (e) {
-            e.preventDefault();
 
-            const isXn = plateNumber.value.startsWith("XN");
+    e.preventDefault();
 
-            if (!isXn && !prevKm.value) {
-                alert("Vui lòng nhập Số Km cuối ngày trước khi đăng ký.");
+    const isXn = plateNumber.value.startsWith("XN");
+
+    if (!isXn && !prevKm.value) {
+        alert("Vui lòng nhập Số Km cuối ngày " + prevKmDate.innerText + " trước khi đăng ký.");
+        prevKm.focus();
+        return;
+    }
+
+    if (Number(fuelAmount.value) <= 0) {
+        alert("Số lít phải lớn hơn 0.");
+        fuelAmount.focus();
+        return;
+    }
+
+    // ===== VALIDATE KM KHÔNG ĐƯỢC NHỎ HƠN NGÀY TRƯỚC =====
+    if (!isXn) {
+
+        const car = plateNumber.value;
+        const inputDate = fuelDate.value;
+        const inputKm = Number(prevKm.value);
+
+        let prevRecords = allRecords
+            .filter(r => r.plateNumber === car && r.date < inputDate)
+            .sort((a, b) => {
+                if (a.date > b.date) return -1;
+                if (a.date < b.date) return 1;
+                return b.stt - a.stt;
+            });
+
+        if (prevRecords.length > 0) {
+
+            let lastRecord = prevRecords[0];
+            let lastKm = Number(lastRecord.endKm) || 0;
+
+            if (inputKm <= lastKm) {
+                alert(
+                    `❌ Km không hợp lệ!\n\n` +
+                    `Xe: ${car}\n` +
+                    `Ngày trước: ${lastRecord.date}\n` +
+                    `Km trước: ${formatNumber(lastKm)}\n\n` +
+                    `Km nhập phải > Km trước`
+                );
                 prevKm.focus();
                 return;
             }
+        }
+    }
 
-            if (Number(fuelAmount.value) <= 0) {
-                alert("Số lít phải lớn hơn 0.");
-                fuelAmount.focus();
-                return;
-            }
+    // ===== SUBMIT =====
+    const data = {
+        plateNumber: plateNumber.value,
+        driverName: driverName.value,
+        fuelAmount: fuelAmount.value,
+        date: fuelDate.value,
+        prevKm: prevKm.value
+    };
 
-            if (!isXn) {
-                const car = plateNumber.value;
-                const inputDate = fuelDate.value;
-                const inputKm = Number(prevKm.value);
+    jsonp(CONFIG.API + "?action=add&data=" + encodeURIComponent(JSON.stringify(data)), "add");
 
-                let prevRecords = allRecords
-                    .filter(r => r.plateNumber === car && r.date < inputDate)
-                    .sort((a, b) => {
-                        if (a.date > b.date) return -1;
-                        if (a.date < b.date) return 1;
-                        return b.stt - a.stt;
-                    });
+});
 
-                if (prevRecords.length > 0) {
-                    let lastRecord = prevRecords[0];
-                    let lastKm = Number(lastRecord.endKm) || 0;
-
-                    if (inputKm <= lastKm) {
-                        alert(
-                            `❌ Km không hợp lệ!\n\n` +
-                            `Xe: ${car}\n` +
-                            `Ngày trước: ${lastRecord.date}\n` +
-                            `Km trước: ${formatNumber(lastKm)}\n\n` +
-                            `Km nhập phải > Km trước`
-                        );
-                        prevKm.focus();
-                        return;
-                    }
-                }
-            }
-
-            const data = {
-                plateNumber: plateNumber.value,
-                driverName: driverName.value,
-                fuelAmount: fuelAmount.value,
-                date: fuelDate.value,
-                kDate: kDate.value,
-                prevKm: prevKm.value
-            };
-
-            jsonp(CONFIG.API + "?action=add&data=" + encodeURIComponent(JSON.stringify(data)), "add");
-        });
+        load();
 
         function initPivotYear() {
+
             let years = new Set();
+
             allRecords.forEach(r => {
-                if (r.year) years.add(r.year);
+                let y = new Date(r.date).getFullYear();
+                years.add(y);
             });
-            
+
             years = [...years].sort();
-            if (years.length === 0) years = [new Date().getFullYear()];
-            
-            const select = document.getElementById("pivotYear");
-            select.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
-            select.value = new Date().getFullYear();
+
+            pivotYear.innerHTML = years
+                .map(y => `<option value="${y}">${y}</option>`)
+                .join("");
+
+            pivotYear.value = new Date().getFullYear();
+
         }
 
         function formatNumber(n) {
             return Number(n || 0).toLocaleString("vi-VN");
         }
 
-        // ===== INIT =====
-        load();
-        loadCarList();
-        loadDuyetNames();
-        openTab({currentTarget: document.querySelector('.tablinks')}, 'DangKy');
+
+
     </script>
+
 </body>
+
 </html>
