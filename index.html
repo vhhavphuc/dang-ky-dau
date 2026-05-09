@@ -1199,13 +1199,13 @@
                     let lastRecord = prevRecords[0];
                     let lastKm = Number(lastRecord.endKm) || 0;
 
-                    if (inputKm <= lastKm) {
+                    if (inputKm < lastKm) {
                         alert(
                             `❌ Km không hợp lệ!\n\n` +
                             `Xe: ${car}\n` +
                             `Ngày trước: ${lastRecord.date}\n` +
                             `Km trước: ${formatNumber(lastKm)}\n\n` +
-                            `Km nhập phải > Km trước`
+                            `Km nhập phải >= Km trước`
                         );
                         prevKm.focus();
                         return;
